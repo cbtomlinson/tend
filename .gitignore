@@ -32,3 +32,9 @@ design_handoff_tend/
 
 # Local agent/editor config (machine-specific paths)
 .claude/
+
+# Supabase CLI local state
+supabase/.temp/
+
+# Held back until deploy step (added via GitHub web UI)
+.github/workflows/deploy.yml
