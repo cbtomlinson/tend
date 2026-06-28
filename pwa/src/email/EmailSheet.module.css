@@ -1,0 +1,135 @@
+.title {
+  font: 600 17px var(--font-sans);
+  color: var(--ink);
+}
+.sub {
+  font: 400 12px var(--font-sans);
+  color: var(--muted);
+  margin: 2px 0 14px;
+}
+.tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 14px;
+}
+.tab {
+  flex: none;
+  padding: 7px 13px;
+  border-radius: var(--r-chip-pill);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+  background: var(--chip-track);
+  color: var(--text-3);
+}
+.tabOn {
+  background: var(--accent);
+  color: #fff;
+}
+.preview {
+  border: 1px solid #e6eaee;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.previewHead {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line-1);
+  font: 600 12px var(--font-sans);
+  color: var(--text-3);
+}
+.previewBody {
+  padding: 6px 14px 12px;
+  max-height: 240px;
+  overflow: auto;
+}
+.plain {
+  margin: 8px 0;
+  font: 400 11px/1.6 var(--font-mono);
+  color: var(--text-2);
+  white-space: pre-wrap;
+}
+.groupName {
+  font: 600 11px var(--font-sans);
+  color: var(--muted);
+  letter-spacing: 0.03em;
+  margin: 10px 0 5px;
+}
+.groupItem {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+  font: 400 12.5px var(--font-sans);
+  color: var(--ink);
+}
+.bullet {
+  color: var(--faint-2);
+}
+.itemSub {
+  font: 400 10.5px var(--font-mono);
+  color: #a7aeb7;
+}
+.flatRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f4f6f8;
+}
+.flatDot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-top: 5px;
+}
+.flatTitle {
+  font: 500 12.5px var(--font-sans);
+  color: var(--ink);
+}
+.kindleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font: 500 12.5px var(--font-sans);
+  color: var(--text-3);
+  cursor: pointer;
+}
+.kindleRow input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+.actions {
+  display: flex;
+  gap: 10px;
+}
+.send {
+  flex: 1;
+  height: 48px;
+  border-radius: 13px;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: 600 15px var(--font-sans);
+  cursor: pointer;
+}
+.copy {
+  flex: none;
+  padding: 0 16px;
+  height: 48px;
+  border-radius: 13px;
+  border: 1px solid var(--line-3);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+}

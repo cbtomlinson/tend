@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+.pnp.*
+.yarn/*
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Env / secrets — NEVER commit. Resend + vision keys live here, server-side only.
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.DS_Store
+*.local
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Misc bundle
+Personal task consolidation system.zip
+
+# Design handoff — contains real names; never publish
+design_handoff_tend/
+
+# Local agent/editor config (machine-specific paths)
+.claude/

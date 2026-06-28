@@ -1,0 +1,118 @@
+/*
+ * Tend design tokens — Direction A "Clinical Calm".
+ * Source of truth: README.md "Design tokens" + prototype/Tend.dc.html.
+ * Areas are NEVER relied on as color alone (they survive 1-bit e-ink as text);
+ * the tints here are a subtle phone-only affordance.
+ */
+
+:root {
+  /* ---- Accent (default #3f74a6; alternates offered in README) ---- */
+  --accent: #3f74a6;
+  --accent-soft: #3f74a659; /* accent @ ~35% alpha — FAB shadow */
+
+  /* ---- Ink / text ---- */
+  --ink: #1c2530;
+  --text-2: #42505e;
+  --text-3: #5b6470;
+  --muted: #8a929c;
+  --muted-2: #9aa3af;
+  --faint: #b6bec7;
+  --faint-2: #c4ccd4;
+
+  /* ---- Surfaces ---- */
+  --app-bg: #fbfcfd;
+  --desktop-backdrop: #e7ebf0;
+  --card: #ffffff;
+
+  /* ---- Hairlines / chrome ---- */
+  --line-1: #eef1f4;
+  --line-2: #e9edf1;
+  --line-3: #e3e8ed;
+  --line-4: #f0f2f5;
+  --line-5: #eceff2;
+  --chip-track: #eef1f4;
+  --count-pill-bg: #e7edf3;
+  --count-pill-text: #42505e;
+
+  /* ---- Status ---- */
+  --success: #2f7d4f;
+  --success-bg: #eef6f1;
+  --warning: #b07514;
+  --warning-2: #97681a;
+  --danger: #b5402f;
+
+  /* ---- Source tag (neutral chip) ---- */
+  --src-bg: #f1f3f6;
+  --src-text: #5b6470;
+
+  /* ---- Area tints (bg / text) ---- */
+  --area-clindoc-bg: #eef3fb;
+  --area-clindoc-text: #3568a0;
+  --area-oprehab-bg: #eef6f1;
+  --area-oprehab-text: #2f7d4f;
+  --area-acuterehab-bg: #fbf1ed;
+  --area-acuterehab-text: #b05a35;
+  --area-irf-bg: #f3eefb;
+  --area-irf-text: #6a4fa0;
+
+  /* ---- Due-urgency chip (bg / text / border) ---- */
+  --due-overdue-bg: #fdeceb;
+  --due-overdue-text: #b5402f;
+  --due-overdue-border: #f1cdc6;
+  --due-soon-bg: #fdf6ea;
+  --due-soon-text: #97681a;
+  --due-soon-border: #eddcb6;
+  --due-normal-bg: #ffffff;
+  --due-normal-text: #5b6470;
+  --due-normal-border: #e3e8ed;
+
+  /* ---- Radii ---- */
+  --r-card: 9px;        /* Ultra default; density preset may override */
+  --r-card-lg: 13px;
+  --r-chip-pill: 999px;
+  --r-chip: 8px;
+  --r-button: 13px;
+  --r-sheet: 18px;
+
+  /* ---- Shadows ---- */
+  --shadow-card: 0 1px 2px rgba(20, 30, 40, 0.04);
+  --shadow-fab: 0 4px 12px var(--accent-soft);
+  --shadow-float: 0 16px 34px rgba(20, 30, 40, 0.24);
+
+  /* ---- Density: Ultra (default). Compact / Condensed swap these. ---- */
+  --d-card-pad: 8px 10px;
+  --d-radius: 9px;
+  --d-title-size: 12.5px;
+  --d-meta-top: 6px;
+  --d-tag-size: 9.5px;
+
+  /* ---- Fonts (self-hosted via @fontsource) ---- */
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* ---- App layout ---- */
+  --app-max-width: 480px;
+}
+
+/* Density presets — apply on a wrapper via data-density. */
+[data-density='Compact'] {
+  --d-card-pad: 12px;
+  --d-radius: 13px;
+  --d-title-size: 13.5px;
+  --d-meta-top: 9px;
+  --d-tag-size: 10.5px;
+}
+[data-density='Condensed'] {
+  --d-card-pad: 9px 11px;
+  --d-radius: 10px;
+  --d-title-size: 12.7px;
+  --d-meta-top: 7px;
+  --d-tag-size: 10px;
+}
+[data-density='Ultra'] {
+  --d-card-pad: 8px 10px;
+  --d-radius: 9px;
+  --d-title-size: 12.5px;
+  --d-meta-top: 6px;
+  --d-tag-size: 9.5px;
+}

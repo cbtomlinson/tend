@@ -1,0 +1,67 @@
+.sourceTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--src-bg);
+  color: var(--src-text);
+  font: 600 var(--d-tag-size) var(--font-sans);
+  white-space: nowrap;
+}
+
+.areaTag {
+  padding: 2px 7px;
+  border-radius: 6px;
+  font: 600 var(--d-tag-size) var(--font-sans);
+  white-space: nowrap;
+}
+
+.dueChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid;
+  font: 600 var(--d-tag-size) var(--font-sans);
+  white-space: nowrap;
+}
+
+.dueDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.waiting {
+  font: italic 400 var(--d-tag-size) var(--font-sans);
+  color: var(--muted-2);
+  white-space: nowrap;
+}
+
+.prio {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: 600 11px var(--font-sans);
+  color: var(--text-2);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.dotHigh {
+  background: var(--ink);
+}
+.dotMed {
+  background: linear-gradient(90deg, var(--ink) 50%, #d3d8de 50%);
+}
+.dotLow {
+  background: #fff;
+  border: 1.5px solid var(--faint-2);
+}

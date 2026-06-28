@@ -1,0 +1,120 @@
+.board {
+  padding: 12px 0 4px;
+}
+
+.chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 0 18px 12px;
+}
+
+.chip {
+  flex: none;
+  padding: 5px 11px;
+  border-radius: var(--r-chip-pill);
+  font: 600 11.5px var(--font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+  background: #fff;
+  color: var(--text-3);
+  border: 1px solid var(--line-3);
+}
+.chipOn {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px 12px;
+}
+
+.segTrack {
+  flex: 1;
+  display: flex;
+  background: var(--chip-track);
+  border-radius: 8px;
+  padding: 3px;
+}
+.seg {
+  flex: 1;
+  text-align: center;
+  padding: 6px;
+  border-radius: 7px;
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+  background: transparent;
+  color: var(--muted);
+}
+.segOn {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.addBucket {
+  flex: none;
+  font: 600 12px var(--font-sans);
+  color: var(--accent);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sections {
+  padding: 0 18px 20px;
+}
+.section {
+  margin-bottom: 18px;
+}
+.sectionHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+.sectionName {
+  font: 600 13.5px var(--font-sans);
+  color: var(--ink);
+}
+.count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--r-chip-pill);
+  background: var(--count-pill-bg);
+  color: var(--count-pill-text);
+  font: 600 11px var(--font-mono);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.deleteBucket {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  color: var(--faint);
+  padding: 4px;
+  border-radius: 6px;
+}
+.deleteBucket:hover {
+  color: var(--danger);
+}
+.zone {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-height: 18px;
+  border-radius: 10px;
+}
+.empty {
+  padding: 14px;
+  text-align: center;
+  font: 400 11.5px var(--font-sans);
+  color: var(--faint);
+  border: 1px dashed var(--line-3);
+  border-radius: 10px;
+}

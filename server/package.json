@@ -1,0 +1,12 @@
+{
+  "name": "@tend/server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Tend server functions: vision/OCR proxy (Resend + e-ink render to come). Secrets live here, never in the client.",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.70.0",
+    "resend": "^4.0.0",
+    "zod": "^3.24.0"
+  }
+}

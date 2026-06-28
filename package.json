@@ -1,0 +1,18 @@
+{
+  "name": "tend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Tend — personal task-consolidation app (PWA + e-ink). Phone-first, local-first, PHI-safe.",
+  "workspaces": [
+    "pwa"
+  ],
+  "scripts": {
+    "dev": "npm --workspace pwa run dev",
+    "build": "npm --workspace pwa run build",
+    "preview": "npm --workspace pwa run preview",
+    "typecheck": "npm --workspace pwa run typecheck"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

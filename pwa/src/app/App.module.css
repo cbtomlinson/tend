@@ -1,0 +1,117 @@
+.column {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  background: var(--app-bg);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 50px rgba(20, 30, 40, 0.12);
+}
+
+.header {
+  flex: none;
+  padding: 14px 18px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line-1);
+  background: var(--app-bg);
+  z-index: 5;
+}
+.wordmark {
+  font: 700 20px var(--font-sans);
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.subline {
+  font: 400 11px var(--font-sans);
+  color: var(--muted);
+  margin-top: 1px;
+}
+.fab {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow-fab);
+}
+
+.main {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nav {
+  flex: none;
+  height: 58px;
+  border-top: 1px solid var(--line-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #fff;
+  z-index: 5;
+}
+.navItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  font: 600 9.5px var(--font-sans);
+  color: var(--muted-2);
+}
+.navOn {
+  color: var(--accent);
+}
+
+.clone {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 90;
+  pointer-events: none;
+  width: 300px;
+  background: #fff;
+  border: 1px solid #d7dde3;
+  border-radius: 11px;
+  box-shadow: var(--shadow-float);
+  padding: 11px 13px;
+}
+.cloneTitle {
+  font: 600 13px var(--font-sans);
+  color: var(--ink);
+}
+.cloneMeta {
+  display: flex;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.toastWrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 72px;
+  display: flex;
+  justify-content: center;
+  z-index: 95;
+  pointer-events: none;
+}
+.toast {
+  background: var(--ink);
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: var(--r-chip-pill);
+  font: 500 12.5px var(--font-sans);
+  box-shadow: 0 8px 24px rgba(20, 30, 40, 0.3);
+  animation: td-toast 0.25s;
+}
