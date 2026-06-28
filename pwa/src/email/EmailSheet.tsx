@@ -3,6 +3,7 @@ import { Mail } from 'lucide-react';
 import type { Bucket, Task } from '@/data/types';
 import {
   emailHtml,
+  emailSubject,
   emailTitle,
   flatList,
   groupBlocks,
@@ -37,7 +38,7 @@ export function EmailSheet({ tasks, buckets }: { tasks: Task[]; buckets: Bucket[
 
   const onSend = async () => {
     const res = await sendBoardEmail({
-      subject: `Tend · ${emailTitle(fmt)}`,
+      subject: emailSubject(fmt),
       html: emailHtml(tasks, buckets, fmt),
       text: plain,
       toKindle,
