@@ -1,4 +1,5 @@
 import type { Area, Source } from '@/data/types';
+import { apiPost } from './api';
 
 /*
  * Vision / OCR client boundary.
@@ -43,11 +44,7 @@ export async function extractTasks(image: Blob): Promise<ExtractResult> {
   const mediaType = image.type || 'image/jpeg';
   const imageBase64 = await blobToBase64(image);
 
-  const res = await fetch('/api/vision', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ imageBase64, mediaType }),
-  });
+  const res = await apiPost('vision', { imageBase64, mediaType });
 
   if (res.status === 503) {
     // Proxy reachable but no API key configured — demo with sample data.

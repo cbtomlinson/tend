@@ -7,6 +7,8 @@
  * browser. Without configuration the proxy returns 503 and we say so.
  */
 
+import { apiPost } from './api';
+
 export interface SendArgs {
   subject: string;
   html: string;
@@ -19,11 +21,7 @@ export interface SendResult {
 }
 
 export async function sendBoardEmail(args: SendArgs): Promise<SendResult> {
-  const res = await fetch('/api/email', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(args),
-  });
+  const res = await apiPost('email', args);
 
   if (res.status === 503) {
     return { ok: false, message: 'Email not set up yet — use “Set Email Settings”' };
