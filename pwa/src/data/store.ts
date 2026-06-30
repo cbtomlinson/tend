@@ -36,6 +36,18 @@ export async function ensureSeeded(): Promise<void> {
       await db.meta.put({ key: 'samplesCleared', value: 1 });
     });
   }
+
+  // Ensure the "Today" bucket exists (added after first release) — at the top.
+  if (!(await db.buckets.get('today'))) {
+    const all = await db.buckets.orderBy('order').toArray();
+    const firstOrder = all.length ? all[0].order : 0;
+    await db.buckets.put({
+      id: 'today',
+      name: 'Today',
+      fixed: true,
+      order: firstOrder - 1,
+    });
+  }
 }
 
 async function takeId(): Promise<number> {
@@ -153,10 +165,22 @@ export async function addBucket(name: string): Promise<void> {
   await db.buckets.put({ id, name: trimmed, order: count });
 }
 
+/** Move a bucket one step up or down by swapping its order with its neighbor. */
+export async function moveBucket(id: string, dir: 'up' | 'down'): Promise<void> {
+  await db.transaction('rw', db.buckets, async () => {
+    const all = await db.buckets.orderBy('order').toArray();
+    const i = all.findIndex((b) => b.id === id);
+    const j = dir === 'up' ? i - 1 : i + 1;
+    if (i < 0 || j < 0 || j >= all.length) return;
+    await db.buckets.update(all[i].id, { order: all[j].order });
+    await db.buckets.update(all[j].id, { order: all[i].order });
+  });
+}
+
 /**
- * Delete a custom bucket. Fixed buckets (Actively Working / Waiting On / Later)
- * can't be deleted. Any tasks in the bucket are moved to "Later" — never lost.
- * Returns the number of tasks that were moved.
+ * Delete a custom bucket. Fixed buckets (Today / Actively Working / Waiting On /
+ * Later) can't be deleted. Any tasks in the bucket are moved to "Later" — never
+ * lost. Returns the number of tasks that were moved.
  */
 export async function deleteBucket(id: string): Promise<number> {
   return db.transaction('rw', db.tasks, db.buckets, async () => {

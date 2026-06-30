@@ -5,18 +5,16 @@ import s from './TaskCard.module.css';
 
 interface Props {
   task: Task;
-  showNote: boolean;
   dimmed: boolean;
   onOpen: () => void;
   onDragStart: (e: React.PointerEvent) => void;
 }
 
-export function TaskCard({ task, showNote, dimmed, onOpen, onDragStart }: Props) {
-  const noteOrAdded = task.note || (task.added ? `added ${task.added}` : '');
+export function TaskCard({ task, dimmed, onOpen, onDragStart }: Props) {
   return (
     <div
       data-task-id={task.id}
-      className={s.card}
+      className={`${s.card} ${task.prio === 'High' ? s.cardHigh : ''}`}
       style={{ opacity: dimmed ? 0.35 : 1 }}
     >
       <button type="button" className={s.content} onClick={onOpen}>
@@ -30,7 +28,7 @@ export function TaskCard({ task, showNote, dimmed, onOpen, onDragStart }: Props)
             <PriorityMark prio={task.prio} />
           </span>
         </div>
-        {showNote && noteOrAdded && <div className={s.note}>{noteOrAdded}</div>}
+        {task.note && <div className={s.note}>{task.note}</div>}
       </button>
       <div
         className={s.grip}

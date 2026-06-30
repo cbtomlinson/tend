@@ -9,9 +9,10 @@ import type { Bucket, Task } from './types';
 export const SEED_NEXT_ID = 50;
 
 export const SEED_BUCKETS: Bucket[] = [
-  { id: 'active', name: 'Actively Working', fixed: true, order: 0 },
-  { id: 'waiting', name: 'Waiting On', fixed: true, order: 1 },
-  { id: 'later', name: 'Later', fixed: true, order: 2 },
+  { id: 'today', name: 'Today', fixed: true, order: 0 },
+  { id: 'active', name: 'Actively Working', fixed: true, order: 1 },
+  { id: 'waiting', name: 'Waiting On', fixed: true, order: 2 },
+  { id: 'later', name: 'Later', fixed: true, order: 3 },
 ];
 
 type SeedPatch = Partial<Task>;

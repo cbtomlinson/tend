@@ -21,9 +21,6 @@ import { NewBucketModal } from '@/board/NewBucketModal';
 import { useUI } from './uiState';
 import s from './App.module.css';
 
-// Phone-first preference: notes hidden by default (matches prototype showNote=false).
-const SHOW_NOTE = false;
-
 export function App() {
   const tasks = useActiveTasks();
   const buckets = useBuckets();
@@ -69,7 +66,7 @@ export function App() {
       {/* MAIN */}
       <div className={s.main}>
         {ui.view === 'board' && (
-          <Board tasks={tasks} buckets={buckets} showNote={SHOW_NOTE} drag={drag} />
+          <Board tasks={tasks} buckets={buckets} drag={drag} />
         )}
         {ui.view === 'archive' && <Archive />}
         {ui.view === 'eink' && <EinkDisplay tasks={tasks} buckets={buckets} />}

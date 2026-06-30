@@ -92,13 +92,30 @@
   align-items: center;
   justify-content: center;
 }
-.deleteBucket {
+.bucketTools {
   margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.bucketArrow {
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted);
+  padding: 4px;
+  border-radius: 6px;
+}
+.bucketArrow:disabled {
+  color: var(--faint-2);
+  opacity: 0.4;
+}
+.deleteBucket {
   display: inline-flex;
   align-items: center;
   color: var(--faint);
   padding: 4px;
   border-radius: 6px;
+  margin-left: 2px;
 }
 .deleteBucket:hover {
   color: var(--danger);

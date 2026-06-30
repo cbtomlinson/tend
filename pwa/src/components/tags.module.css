@@ -48,6 +48,11 @@
   font: 600 11px var(--font-sans);
   color: var(--text-2);
 }
+/* High stands out: red, bolder. */
+.prioHigh {
+  color: var(--danger);
+  font-weight: 700;
+}
 
 .dot {
   width: 8px;
@@ -56,7 +61,7 @@
   box-sizing: border-box;
 }
 .dotHigh {
-  background: var(--ink);
+  background: var(--danger);
 }
 .dotMed {
   background: linear-gradient(90deg, var(--ink) 50%, #d3d8de 50%);

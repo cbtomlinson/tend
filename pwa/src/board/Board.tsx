@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import type { Bucket, Task } from '@/data/types';
 import { ALL_AREAS } from '@/domain/areas';
-import { deleteBucket } from '@/data/store';
+import { deleteBucket, moveBucket } from '@/data/store';
 import { useUI, type AreaFilter } from '@/app/uiState';
 import type { DragApi } from './useDrag';
 import { TaskCard } from './TaskCard';
@@ -19,13 +19,12 @@ interface Group {
 interface Props {
   tasks: Task[];
   buckets: Bucket[];
-  showNote: boolean;
   drag: DragApi;
 }
 
 const AREA_FILTERS: AreaFilter[] = ['All', ...ALL_AREAS];
 
-export function Board({ tasks, buckets, showNote, drag }: Props) {
+export function Board({ tasks, buckets, drag }: Props) {
   const { filterArea, setFilterArea, groupBy, setGroupBy, openOverlay, openDetail, flash } =
     useUI();
 
@@ -101,20 +100,42 @@ export function Board({ tasks, buckets, showNote, drag }: Props) {
       </div>
 
       <div className={s.sections}>
-        {groups.map((g) => (
+        {groups.map((g, i) => (
           <div key={g.id} className={s.section}>
             <div className={s.sectionHead}>
               <span className={s.sectionName}>{g.name}</span>
               <span className={s.count}>{g.tasks.length}</span>
-              {groupBy === 'Buckets' && !g.fixed && (
-                <button
-                  type="button"
-                  className={s.deleteBucket}
-                  aria-label={`Delete ${g.name} bucket`}
-                  onClick={() => onDeleteBucket(g)}
-                >
-                  <Trash2 size={14} />
-                </button>
+              {groupBy === 'Buckets' && (
+                <div className={s.bucketTools}>
+                  <button
+                    type="button"
+                    className={s.bucketArrow}
+                    aria-label={`Move ${g.name} up`}
+                    disabled={i === 0}
+                    onClick={() => moveBucket(g.id, 'up')}
+                  >
+                    <ChevronUp size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    className={s.bucketArrow}
+                    aria-label={`Move ${g.name} down`}
+                    disabled={i === groups.length - 1}
+                    onClick={() => moveBucket(g.id, 'down')}
+                  >
+                    <ChevronDown size={16} />
+                  </button>
+                  {!g.fixed && (
+                    <button
+                      type="button"
+                      className={s.deleteBucket}
+                      aria-label={`Delete ${g.name} bucket`}
+                      onClick={() => onDeleteBucket(g)}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
               )}
             </div>
             <div data-group-id={g.id} className={s.zone}>
@@ -122,7 +143,6 @@ export function Board({ tasks, buckets, showNote, drag }: Props) {
                 <TaskCard
                   key={t.id}
                   task={t}
-                  showNote={showNote}
                   dimmed={String(drag.dragId) === String(t.id)}
                   onOpen={() => openDetail(t.id)}
                   onDragStart={(e) => drag.startDrag(e, t.id)}

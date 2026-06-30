@@ -59,7 +59,7 @@ const DOT_CLASS: Record<Prio, string> = {
 
 export function PriorityMark({ prio }: { prio: Prio }) {
   return (
-    <span className={s.prio}>
+    <span className={`${s.prio} ${prio === 'High' ? s.prioHigh : ''}`}>
       <span className={`${s.dot} ${DOT_CLASS[prio]}`} />
       {prio[0]}
     </span>

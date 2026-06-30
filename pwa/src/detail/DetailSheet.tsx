@@ -182,7 +182,11 @@ export function DetailSheet() {
         ))}
       </div>
 
-      <div className={s.actions}>
+      {/* Done just closes — your edits already saved as you typed. */}
+      <button type="button" className={s.done} onClick={closeOverlay}>
+        Done
+      </button>
+      <div className={s.secondaryActions}>
         <button
           type="button"
           className={s.complete}
@@ -192,7 +196,7 @@ export function DetailSheet() {
             flash('Archived — kept in history');
           }}
         >
-          <Check size={16} strokeWidth={3} /> Complete
+          <Check size={16} strokeWidth={3} /> Mark complete
         </button>
         <button
           type="button"

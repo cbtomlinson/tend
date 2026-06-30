@@ -6,6 +6,11 @@
   border-radius: var(--d-radius);
   box-shadow: var(--shadow-card);
 }
+/* High-priority cards get a red left edge so they jump out. */
+.cardHigh {
+  box-shadow: inset 3px 0 0 var(--danger), var(--shadow-card);
+  border-color: #f1cdc6;
+}
 
 .content {
   flex: 1;
