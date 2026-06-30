@@ -1,18 +1,27 @@
 import { useState } from 'react';
+import { verifyPassword } from '@/services/api';
 import s from './LoginGate.module.css';
 
 interface Props {
-  error?: string;
-  onSubmit: (password: string) => void;
+  /** Called only after the password is verified against the server. */
+  onUnlock: (password: string) => void;
 }
 
-/** Password screen shown only in the deployed app (protects the API keys). */
-export function LoginGate({ error, onSubmit }: Props) {
+/** Password screen shown only in the deployed app (protects the API + your board). */
+export function LoginGate({ onUnlock }: Props) {
   const [pw, setPw] = useState('');
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState('');
 
-  const submit = () => {
+  const submit = async () => {
     const v = pw.trim();
-    if (v) onSubmit(v);
+    if (!v || checking) return;
+    setChecking(true);
+    setError('');
+    const ok = await verifyPassword(v);
+    setChecking(false);
+    if (ok) onUnlock(v);
+    else setError('Incorrect password');
   };
 
   return (
@@ -27,11 +36,17 @@ export function LoginGate({ error, onSubmit }: Props) {
           value={pw}
           autoFocus
           placeholder="Password"
+          disabled={checking}
           onChange={(e) => setPw(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit()}
         />
-        <button type="button" className={s.button} onClick={submit}>
-          Unlock
+        <button
+          type="button"
+          className={s.button}
+          disabled={checking}
+          onClick={submit}
+        >
+          {checking ? 'Checking…' : 'Unlock'}
         </button>
       </div>
     </div>

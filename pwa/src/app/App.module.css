@@ -30,6 +30,21 @@
   color: var(--muted);
   margin-top: 1px;
 }
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lock {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  padding: 4px;
+}
+.lock:hover {
+  color: var(--ink);
+}
 .fab {
   width: 40px;
   height: 40px;

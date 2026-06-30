@@ -31,11 +31,21 @@ Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
   if (!authorized(req)) return json({ error: 'unauthorized' }, 401);
 
+  // Read the body once. A {ping:true} body is just a password check (used by the
+  // login screen) — the password already passed the gate above, so return ok.
+  let body: { imageBase64?: string; mediaType?: string; ping?: boolean } = {};
+  try {
+    body = await req.json();
+  } catch {
+    /* empty/invalid body */
+  }
+  if (body.ping) return json({ ok: true });
+
   const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
   if (!apiKey) return json({ error: 'not_configured' }, 503);
 
   try {
-    const { imageBase64, mediaType } = await req.json();
+    const { imageBase64, mediaType } = body;
     const model = Deno.env.get('VISION_MODEL') || DEFAULT_MODEL;
     const people = parsePeople(Deno.env.get('PEOPLE_JSON'));
     const client = new Anthropic({ apiKey });

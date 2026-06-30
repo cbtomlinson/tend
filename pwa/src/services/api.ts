@@ -43,6 +43,31 @@ export function setAuthFailHandler(fn: () => void): void {
   onAuthFail = fn;
 }
 
+/** Manually lock the app: forget the password and return to the login screen. */
+export function lock(): void {
+  clearPassword();
+  onAuthFail?.();
+}
+
+/**
+ * Validate a candidate password against the server (used by the login screen) so
+ * a wrong password never opens the app. Locally (no remote) there's nothing to
+ * check, so it's always allowed.
+ */
+export async function verifyPassword(candidate: string): Promise<boolean> {
+  if (!REMOTE) return true;
+  try {
+    const res = await fetch(`${BASE}/vision`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-app-password': candidate },
+      body: JSON.stringify({ ping: true }),
+    });
+    return res.status !== 401;
+  } catch {
+    return false;
+  }
+}
+
 export type ApiEndpoint = 'vision' | 'email';
 
 export async function apiPost(

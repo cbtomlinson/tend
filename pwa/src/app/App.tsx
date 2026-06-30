@@ -2,9 +2,11 @@ import {
   Archive as ArchiveIcon,
   Camera,
   LayoutGrid,
+  Lock,
   Mail,
   MonitorSmartphone,
 } from 'lucide-react';
+import { REMOTE, lock } from '@/services/api';
 import { useActiveTasks, useBuckets } from '@/data/store';
 import { weekday } from '@/domain/dates';
 import { AreaTag, SourceTag } from '@/components/tags';
@@ -42,14 +44,26 @@ export function App() {
             {weekday()} · {tasks.length} active
           </div>
         </div>
-        <button
-          type="button"
-          className={s.fab}
-          aria-label="Capture a list"
-          onClick={() => ui.startCapture()}
-        >
-          <Camera size={18} />
-        </button>
+        <div className={s.headerRight}>
+          {REMOTE && (
+            <button
+              type="button"
+              className={s.lock}
+              aria-label="Lock"
+              onClick={() => lock()}
+            >
+              <Lock size={18} />
+            </button>
+          )}
+          <button
+            type="button"
+            className={s.fab}
+            aria-label="Capture a list"
+            onClick={() => ui.startCapture()}
+          >
+            <Camera size={18} />
+          </button>
+        </div>
       </div>
 
       {/* MAIN */}
