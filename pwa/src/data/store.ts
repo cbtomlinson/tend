@@ -9,14 +9,33 @@ import { winningSource } from '@/domain/sources';
 /* Seeding                                                             */
 /* ------------------------------------------------------------------ */
 
+/** Ids of the original demo tasks — used to clear them once, on existing installs. */
+const SAMPLE_TASK_IDS = SEED_TASKS.map((t) => t.id);
+
 export async function ensureSeeded(): Promise<void> {
-  const count = await db.tasks.count();
-  if (count > 0) return;
-  await db.transaction('rw', db.tasks, db.buckets, db.meta, async () => {
-    await db.tasks.bulkPut(SEED_TASKS);
-    await db.buckets.bulkPut(SEED_BUCKETS);
-    await db.meta.put({ key: 'nextId', value: SEED_NEXT_ID });
-  });
+  const bucketCount = await db.buckets.count();
+  const taskCount = await db.tasks.count();
+
+  // Fresh install: just the default buckets, a clean (empty) board.
+  if (bucketCount === 0 && taskCount === 0) {
+    await db.transaction('rw', db.buckets, db.meta, async () => {
+      await db.buckets.bulkPut(SEED_BUCKETS);
+      await db.meta.put({ key: 'nextId', value: SEED_NEXT_ID });
+      await db.meta.put({ key: 'samplesCleared', value: 1 });
+    });
+    return;
+  }
+
+  // Existing install: one-time removal of the original demo tasks (keeps any
+  // real tasks the user added, which have higher ids).
+  const cleared = await db.meta.get('samplesCleared');
+  if (!cleared) {
+    await db.transaction('rw', db.tasks, db.buckets, db.meta, async () => {
+      await db.tasks.bulkDelete(SAMPLE_TASK_IDS);
+      if ((await db.buckets.count()) === 0) await db.buckets.bulkPut(SEED_BUCKETS);
+      await db.meta.put({ key: 'samplesCleared', value: 1 });
+    });
+  }
 }
 
 async function takeId(): Promise<number> {
