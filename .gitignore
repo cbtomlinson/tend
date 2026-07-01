@@ -38,3 +38,6 @@ supabase/.temp/
 
 # Held back until deploy step (added via GitHub web UI)
 .github/workflows/deploy.yml
+
+# Built site now lives on the gh-pages branch (keeps this folder clean)
+docs/
