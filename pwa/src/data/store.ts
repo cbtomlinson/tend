@@ -37,16 +37,23 @@ export async function ensureSeeded(): Promise<void> {
     });
   }
 
-  // Ensure the "Today" bucket exists (added after first release) — at the top.
+  // Ensure the "Today's Priorities" bucket exists (added after first release) — at the top.
   if (!(await db.buckets.get('today'))) {
     const all = await db.buckets.orderBy('order').toArray();
     const firstOrder = all.length ? all[0].order : 0;
     await db.buckets.put({
       id: 'today',
-      name: 'Today',
+      name: "Today's Priorities",
       fixed: true,
       order: firstOrder - 1,
     });
+  }
+
+  // One-time rename of the default "Today" bucket -> "Today's Priorities".
+  // Only touches the untouched default, so a custom rename is preserved.
+  const todayBucket = await db.buckets.get('today');
+  if (todayBucket && todayBucket.name === 'Today') {
+    await db.buckets.update('today', { name: "Today's Priorities" });
   }
 }
 

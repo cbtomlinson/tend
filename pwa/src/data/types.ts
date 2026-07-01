@@ -4,7 +4,7 @@
 export type Source = 'Zoho' | 'Epic SLG' | 'To Do' | 'Hand';
 
 /** Responsibility area — a filter/grouping dimension, NEVER relied on as color. */
-export type Area = 'ClinDoc' | 'OP Rehab' | 'Acute Rehab' | 'IRF';
+export type Area = 'ClinDoc' | 'OP Rehab' | 'Acute Rehab' | 'IRF' | 'Rover';
 
 export type Prio = 'High' | 'Med' | 'Low';
 

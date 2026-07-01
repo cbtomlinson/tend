@@ -1,6 +1,6 @@
 import type { Area } from '@/data/types';
 
-export const ALL_AREAS: Area[] = ['ClinDoc', 'OP Rehab', 'Acute Rehab', 'IRF'];
+export const ALL_AREAS: Area[] = ['ClinDoc', 'OP Rehab', 'Acute Rehab', 'IRF', 'Rover'];
 
 /** Maps Area -> the CSS custom-property suffix used in tokens.css. */
 const AREA_VAR: Record<Area, string> = {
@@ -8,6 +8,7 @@ const AREA_VAR: Record<Area, string> = {
   'OP Rehab': 'oprehab',
   'Acute Rehab': 'acuterehab',
   IRF: 'irf',
+  Rover: 'rover',
 };
 
 export function areaBgVar(area: Area): string {

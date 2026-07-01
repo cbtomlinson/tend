@@ -5,6 +5,10 @@
   border: 1px solid var(--line-2);
   border-radius: var(--d-radius);
   box-shadow: var(--shadow-card);
+  /* Cards are drag handles, not text — never let a drag select their text. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 /* High-priority cards get a red left edge so they jump out. */
 .cardHigh {

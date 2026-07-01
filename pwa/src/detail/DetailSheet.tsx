@@ -182,9 +182,9 @@ export function DetailSheet() {
         ))}
       </div>
 
-      {/* Done just closes — your edits already saved as you typed. */}
+      {/* "Accept Changes" just closes — your edits already saved as you typed. */}
       <button type="button" className={s.done} onClick={closeOverlay}>
-        Done
+        Accept Changes
       </button>
       <div className={s.secondaryActions}>
         <button

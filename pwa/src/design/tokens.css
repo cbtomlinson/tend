@@ -54,6 +54,8 @@
   --area-acuterehab-text: #b05a35;
   --area-irf-bg: #f3eefb;
   --area-irf-text: #6a4fa0;
+  --area-rover-bg: #e6f3f4;
+  --area-rover-text: #2a7787;
 
   /* ---- Due-urgency chip (bg / text / border) ---- */
   --due-overdue-bg: #fdeceb;
