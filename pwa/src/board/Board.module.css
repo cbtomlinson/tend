@@ -4,16 +4,16 @@
 
 .chips {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   overflow-x: auto;
-  padding: 0 18px 12px;
+  padding: 0 12px 12px;
 }
 
 .chip {
   flex: none;
-  padding: 5px 11px;
+  padding: 5px 8px;
   border-radius: var(--r-chip-pill);
-  font: 600 11.5px var(--font-sans);
+  font: 600 10.5px var(--font-sans);
   cursor: pointer;
   white-space: nowrap;
   background: #fff;
