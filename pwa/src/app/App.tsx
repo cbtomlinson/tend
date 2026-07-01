@@ -126,7 +126,21 @@ export function App() {
       {/* TOAST */}
       {ui.toast && (
         <div className={s.toastWrap}>
-          <div className={s.toast}>{ui.toast}</div>
+          <div className={s.toast}>
+            <span>{ui.toast}</span>
+            {ui.toastAction && (
+              <button
+                type="button"
+                className={s.toastAction}
+                onClick={() => {
+                  ui.toastAction?.run();
+                  ui.clearToast();
+                }}
+              >
+                {ui.toastAction.label}
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

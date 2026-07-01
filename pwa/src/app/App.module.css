@@ -131,6 +131,9 @@
   pointer-events: none;
 }
 .toast {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   background: var(--ink);
   color: #fff;
   padding: 11px 18px;
@@ -138,4 +141,16 @@
   font: 500 12.5px var(--font-sans);
   box-shadow: 0 8px 24px rgba(20, 30, 40, 0.3);
   animation: td-toast 0.25s;
+  /* The wrap ignores pointer events; the toast itself must catch the tap. */
+  pointer-events: auto;
+}
+.toastAction {
+  flex: none;
+  background: transparent;
+  border: none;
+  color: #8fd0ff;
+  font: 700 12.5px var(--font-sans);
+  letter-spacing: 0.02em;
+  padding: 2px 4px;
+  cursor: pointer;
 }

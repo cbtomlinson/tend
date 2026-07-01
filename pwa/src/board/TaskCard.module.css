@@ -16,6 +16,36 @@
   border-color: #f1cdc6;
 }
 
+/* One-tap complete: an empty ring on the left; a check fills in on press/hover. */
+.check {
+  position: relative;
+  flex: none;
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--line-5);
+  color: var(--faint-2);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.checkMark {
+  position: absolute;
+  color: var(--success);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.check:hover .checkRing,
+.check:active .checkRing {
+  color: var(--success);
+}
+.check:hover .checkMark,
+.check:active .checkMark {
+  opacity: 1;
+}
+
 .content {
   flex: 1;
   min-width: 0;

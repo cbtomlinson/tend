@@ -1,4 +1,4 @@
-import { GripVertical } from 'lucide-react';
+import { Check, Circle, GripVertical } from 'lucide-react';
 import type { Task } from '@/data/types';
 import { AreaTag, DueChip, PriorityMark, SourceTag, Waiting } from '@/components/tags';
 import s from './TaskCard.module.css';
@@ -7,16 +7,26 @@ interface Props {
   task: Task;
   dimmed: boolean;
   onOpen: () => void;
+  onComplete: () => void;
   onDragStart: (e: React.PointerEvent) => void;
 }
 
-export function TaskCard({ task, dimmed, onOpen, onDragStart }: Props) {
+export function TaskCard({ task, dimmed, onOpen, onComplete, onDragStart }: Props) {
   return (
     <div
       data-task-id={task.id}
       className={`${s.card} ${task.prio === 'High' ? s.cardHigh : ''}`}
       style={{ opacity: dimmed ? 0.35 : 1 }}
     >
+      <button
+        type="button"
+        className={s.check}
+        aria-label={`Complete "${task.title}"`}
+        onClick={onComplete}
+      >
+        <Circle className={s.checkRing} size={22} strokeWidth={1.75} />
+        <Check className={s.checkMark} size={14} strokeWidth={3} />
+      </button>
       <button type="button" className={s.content} onClick={onOpen}>
         <div className={s.title}>{task.title}</div>
         <div className={s.meta}>

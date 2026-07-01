@@ -55,7 +55,17 @@ interface UIState {
   setEmailFormat: (f: EmailFormat) => void;
 
   toast: string;
-  flash: (msg: string) => void;
+  /** Optional action button shown in the toast (e.g. "Undo"). */
+  toastAction: ToastAction | null;
+  /** Show a toast. Pass an action to add a button (undo gets a longer timeout). */
+  flash: (msg: string, action?: ToastAction) => void;
+  /** Dismiss the current toast immediately (e.g. after its action runs). */
+  clearToast: () => void;
+}
+
+export interface ToastAction {
+  label: string;
+  run: () => void;
 }
 
 const Ctx = createContext<UIState | null>(null);
@@ -72,12 +82,27 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
   const [einkView, setEinkView] = useState<EinkView>('A');
   const [emailFormat, setEmailFormat] = useState<EmailFormat>('priority');
   const [toast, setToast] = useState('');
+  const [toastAction, setToastAction] = useState<ToastAction | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();
 
-  const flash = useCallback((msg: string) => {
+  const flash = useCallback((msg: string, action?: ToastAction) => {
     setToast(msg);
+    setToastAction(action ?? null);
     clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(''), 2600);
+    // Give a bit longer to hit an action button (e.g. Undo).
+    toastTimer.current = setTimeout(
+      () => {
+        setToast('');
+        setToastAction(null);
+      },
+      action ? 5000 : 2600,
+    );
+  }, []);
+
+  const clearToast = useCallback(() => {
+    clearTimeout(toastTimer.current);
+    setToast('');
+    setToastAction(null);
   }, []);
 
   const openOverlay = useCallback((o: Overlay) => setOverlay(o), []);
@@ -130,7 +155,9 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
       emailFormat,
       setEmailFormat,
       toast,
+      toastAction,
       flash,
+      clearToast,
     }),
     [
       view,
@@ -144,6 +171,7 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
       einkView,
       emailFormat,
       toast,
+      toastAction,
       openOverlay,
       closeOverlay,
       startCapture,
@@ -151,6 +179,7 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
       removeCapture,
       openDetail,
       flash,
+      clearToast,
     ],
   );
 

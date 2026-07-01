@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import type { Bucket, Task } from '@/data/types';
 import { ALL_AREAS } from '@/domain/areas';
-import { deleteBucket, moveBucket } from '@/data/store';
+import { completeTask, deleteBucket, moveBucket, restoreTask } from '@/data/store';
 import { useUI, type AreaFilter } from '@/app/uiState';
 import type { DragApi } from './useDrag';
 import { TaskCard } from './TaskCard';
@@ -46,6 +46,14 @@ export function Board({ tasks, buckets, drag }: Props) {
       fixed: !!b.fixed,
     }));
   }, [groupBy, filterArea, shown, buckets]);
+
+  const onCompleteTask = async (t: Task) => {
+    await completeTask(t.id);
+    flash('Completed — kept in history', {
+      label: 'Undo',
+      run: () => void restoreTask(t.id),
+    });
+  };
 
   const onDeleteBucket = async (g: Group) => {
     if (
@@ -145,6 +153,7 @@ export function Board({ tasks, buckets, drag }: Props) {
                   task={t}
                   dimmed={String(drag.dragId) === String(t.id)}
                   onOpen={() => openDetail(t.id)}
+                  onComplete={() => onCompleteTask(t)}
                   onDragStart={(e) => drag.startDrag(e, t.id)}
                 />
               ))}
