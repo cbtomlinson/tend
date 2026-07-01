@@ -17,10 +17,18 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## In progress
 
-- _(nothing right now)_
+- **Complete a task without opening it.** Need a one-tap "done" affordance on the
+  card itself (check circle + Undo is the leading candidate). Awaiting decision.
+- **API usage / cost visibility + model choice.** Show real per-scan token/cost,
+  and/or an in-app model selector (Opus / Sonnet / Haiku) to test handwriting
+  accuracy vs. cost. Vision fn already honors a `VISION_MODEL` env var. Awaiting
+  decision on scope.
 
 ## Done
 
+- 2026-06-30 — Punch list #2: "Today" → "Today's Priorities" (with migration),
+  added **Rover** area, "Done" button → "Accept Changes", drag no longer selects
+  card text, and the board auto-scrolls when you drag near the top/bottom edge.
 - 2026-06-30 — Moved built site off `main` to the `gh-pages` branch so the
   Synology-synced folder is source-only (fixes the recurring "Stale NFS file
   handle" git wedge).
