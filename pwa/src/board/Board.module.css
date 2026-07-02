@@ -25,6 +25,14 @@
   color: #fff;
   border-color: var(--accent);
 }
+/* The "+" chip that adds a custom area. */
+.chipAdd {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 7px;
+  color: var(--accent);
+  border-style: dashed;
+}
 
 .controls {
   display: flex;

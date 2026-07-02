@@ -138,6 +138,34 @@
   padding: 10px;
   margin-bottom: 18px;
 }
+/* "Waiting N d — flag after [−] 7d [+]" stepper row. */
+.waitRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.waitText {
+  font: 400 13px var(--font-sans);
+  color: var(--text-3);
+}
+.waitStep {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--line-3);
+  background: #fff;
+  color: var(--text-3);
+  font: 600 16px var(--font-sans);
+  cursor: pointer;
+}
+.waitDays {
+  min-width: 30px;
+  text-align: center;
+  font: 700 14px var(--font-sans);
+  color: var(--ink);
+}
+
 .done {
   width: 100%;
   height: 50px;

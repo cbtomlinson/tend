@@ -33,15 +33,22 @@ function visionProxy(apiKey: string, model: string, peopleJson: string): Plugin 
         req.on('data', (c) => chunks.push(c as Buffer));
         req.on('end', async () => {
           try {
-            const { imageBase64, mediaType } = JSON.parse(
+            const { imageBase64, mediaType, areas, people } = JSON.parse(
               Buffer.concat(chunks).toString('utf8'),
-            ) as { imageBase64: string; mediaType: ImageMediaType };
+            ) as {
+              imageBase64: string;
+              mediaType: ImageMediaType;
+              areas?: unknown;
+              people?: unknown;
+            };
             const extraction = await extractFromImage({
               imageBase64,
               mediaType,
               apiKey,
               model,
               peopleJson,
+              areas,
+              people,
             });
             // imageBase64 goes out of scope here — nothing is persisted.
             res.setHeader('content-type', 'application/json');

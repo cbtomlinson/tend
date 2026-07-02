@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { Bucket, Task } from './types';
+import type { AreaDef, Bucket, Person, Task } from './types';
 
 /*
  * Local-first store. Tasks + buckets live ONLY on-device (IndexedDB).
@@ -9,6 +9,10 @@ import type { Bucket, Task } from './types';
 export class TendDB extends Dexie {
   tasks!: Table<Task, number | string>;
   buckets!: Table<Bucket, string>;
+  /** User-manageable areas (v2). */
+  areas!: Table<AreaDef, string>;
+  /** Learned people → area hints for scan auto-assignment (v2). */
+  people!: Table<Person, string>;
   /** key/value for small app metadata (e.g. nextId). */
   meta!: Table<{ key: string; value: number }, string>;
 
@@ -17,6 +21,13 @@ export class TendDB extends Dexie {
     this.version(1).stores({
       tasks: 'id, bucket, area, status, order',
       buckets: 'id, order',
+      meta: 'key',
+    });
+    this.version(2).stores({
+      tasks: 'id, bucket, area, status, order',
+      buckets: 'id, order',
+      areas: 'name, order',
+      people: 'name',
       meta: 'key',
     });
   }

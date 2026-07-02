@@ -1,8 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from './db';
 import { SEED_BUCKETS, SEED_NEXT_ID, SEED_TASKS } from './seed';
-import type { Bucket, Source, Task } from './types';
-import { today } from '@/domain/dates';
+import type { Area, Bucket, Person, Source, Task } from './types';
+import { isoToday, today } from '@/domain/dates';
+import { AREA_PALETTE_SIZE, DEFAULT_AREAS } from '@/domain/areas';
 import { winningSource } from '@/domain/sources';
 
 /* ------------------------------------------------------------------ */
@@ -54,6 +55,19 @@ export async function ensureSeeded(): Promise<void> {
   const todayBucket = await db.buckets.get('today');
   if (todayBucket && todayBucket.name === 'Today') {
     await db.buckets.update('today', { name: "Today's Priorities" });
+  }
+
+  // v2: seed the areas table (fills in any missing defaults, keeps customs).
+  for (const a of DEFAULT_AREAS) {
+    if (!(await db.areas.get(a.name))) await db.areas.put(a);
+  }
+
+  // v2: stamp waitingSince on tasks already sitting in Waiting On.
+  const waiting = await db.tasks.where('bucket').equals('waiting').toArray();
+  for (const t of waiting) {
+    if (t.status === 'active' && !t.waitingSince) {
+      await db.tasks.update(t.id, { waitingSince: isoToday() });
+    }
   }
 }
 
@@ -113,6 +127,22 @@ export async function updateTask(
   await db.tasks.update(id, patch);
 }
 
+/** Default "waiting too long" threshold (days); per-task override on the task. */
+export const WAIT_REMIND_DEFAULT = 7;
+
+/**
+ * Change a task's bucket, stamping/clearing waitingSince as it enters/leaves
+ * Waiting On. Use this (not raw updateTask) for bucket changes.
+ */
+export async function setTaskBucket(id: Task['id'], bucket: string): Promise<void> {
+  const t = await db.tasks.get(id);
+  if (!t || t.bucket === bucket) return;
+  const patch: Partial<Task> = { bucket };
+  if (bucket === 'waiting') patch.waitingSince = isoToday();
+  else if (t.bucket === 'waiting') patch.waitingSince = '';
+  await db.tasks.update(id, patch);
+}
+
 export async function completeTask(id: Task['id']): Promise<void> {
   await db.tasks.update(id, { status: 'archived', archivedAt: today() });
 }
@@ -141,8 +171,17 @@ export async function moveTask(
     const moved = actives.find((t) => String(t.id) === String(id));
     if (!moved) return;
 
-    if (groupBy === 'Area') moved.area = groupId as Task['area'];
-    else moved.bucket = groupId;
+    if (groupBy === 'Area') {
+      moved.area = groupId as Task['area'];
+    } else {
+      // Stamp/clear the waiting timer as the task enters/leaves Waiting On.
+      if (groupId === 'waiting' && moved.bucket !== 'waiting') {
+        moved.waitingSince = isoToday();
+      } else if (groupId !== 'waiting' && moved.bucket === 'waiting') {
+        moved.waitingSince = '';
+      }
+      moved.bucket = groupId;
+    }
 
     const rest = actives.filter((t) => String(t.id) !== String(id));
     const key = groupBy === 'Area' ? 'area' : 'bucket';
@@ -198,6 +237,68 @@ export async function deleteBucket(id: string): Promise<number> {
     await db.buckets.delete(id);
     return tasks.length;
   });
+}
+
+/* ------------------------------------------------------------------ */
+/* Areas & people                                                     */
+/* ------------------------------------------------------------------ */
+
+/** Add a custom area. Returns false if the name is taken/blank. */
+export async function addArea(name: string): Promise<boolean> {
+  const trimmed = name.trim();
+  if (!trimmed) return false;
+  return db.transaction('rw', db.areas, async () => {
+    const all = await db.areas.toArray();
+    if (all.some((a) => a.name.toLowerCase() === trimmed.toLowerCase())) {
+      return false;
+    }
+    const maxOrder = Math.max(-1, ...all.map((a) => a.order));
+    // Cycle custom colors through the c5–c9 slice of the palette.
+    const customCount = all.filter((a) => !a.fixed).length;
+    const color = 5 + (customCount % (AREA_PALETTE_SIZE - 5));
+    await db.areas.put({ name: trimmed, order: maxOrder + 1, color });
+    return true;
+  });
+}
+
+/**
+ * Delete a custom area. Fixed areas can't be deleted. Tasks in the area move
+ * to the first area (never lost). Returns the number of tasks moved.
+ */
+export async function deleteArea(name: string): Promise<number> {
+  return db.transaction('rw', db.tasks, db.areas, db.people, async () => {
+    const area = await db.areas.get(name);
+    if (!area || area.fixed) return 0;
+    const first = (await db.areas.orderBy('order').first())!;
+    const tasks = await db.tasks.where('area').equals(name).toArray();
+    await Promise.all(
+      tasks.map((t) => db.tasks.update(t.id, { area: first.name })),
+    );
+    // Un-point any learned people at the removed area.
+    const everyone = await db.people.toArray();
+    await Promise.all(
+      everyone
+        .filter((p) => p.area === name)
+        .map((p) => db.people.put({ ...p, area: null })),
+    );
+    await db.areas.delete(name);
+    return tasks.length;
+  });
+}
+
+/** Live list of learned people (defined + dismissed). */
+export function usePeople(): Person[] {
+  return useLiveQuery(() => db.people.toArray(), [], [] as Person[]) ?? [];
+}
+
+/** Learn a person -> area hint for future scans. */
+export async function definePerson(name: string, area: Area): Promise<void> {
+  await db.people.put({ name: name.trim(), area });
+}
+
+/** Mark a name as a one-off: known (never re-asked), but no area hint. */
+export async function dismissPerson(name: string): Promise<void> {
+  await db.people.put({ name: name.trim(), area: null });
 }
 
 /* ------------------------------------------------------------------ */

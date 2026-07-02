@@ -3,14 +3,16 @@ import { Check, Pencil, Trash2 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/data/db';
 import {
+  WAIT_REMIND_DEFAULT,
   completeTask,
   deleteTask,
+  setTaskBucket,
   updateTask,
   useBuckets,
 } from '@/data/store';
-import type { Area, Prio } from '@/data/types';
-import { ALL_AREAS } from '@/domain/areas';
-import { fmtShort } from '@/domain/dates';
+import type { Prio } from '@/data/types';
+import { useAreas } from '@/domain/areas';
+import { daysSince, fmtShort } from '@/domain/dates';
 import { SourceTag } from '@/components/tags';
 import { BottomSheet } from '@/components/BottomSheet';
 import { useUI } from '@/app/uiState';
@@ -34,6 +36,7 @@ function nextTueLabel(): string {
 export function DetailSheet() {
   const { detailId, closeOverlay, flash } = useUI();
   const buckets = useBuckets();
+  const areas = useAreas();
   const task = useLiveQuery(
     () => (detailId != null ? db.tasks.get(detailId) : undefined),
     [detailId],
@@ -91,14 +94,14 @@ export function DetailSheet() {
 
       <div className={s.label}>AREA</div>
       <div className={s.chipWrap}>
-        {ALL_AREAS.map((a: Area) => (
+        {areas.map((a) => (
           <button
-            key={a}
+            key={a.name}
             type="button"
-            className={`${s.mini} ${task.area === a ? s.miniOn : ''}`}
-            onClick={() => set({ area: a })}
+            className={`${s.mini} ${task.area === a.name ? s.miniOn : ''}`}
+            onClick={() => set({ area: a.name })}
           >
-            {a}
+            {a.name}
           </button>
         ))}
       </div>
@@ -175,12 +178,56 @@ export function DetailSheet() {
             key={b.id}
             type="button"
             className={`${s.mini} ${task.bucket === b.id ? s.miniOn : ''}`}
-            onClick={() => set({ bucket: b.id })}
+            onClick={() => setTaskBucket(task.id, b.id)}
           >
             {b.name}
           </button>
         ))}
       </div>
+
+      {task.bucket === 'waiting' && (
+        <>
+          <div className={s.label}>WAITING REMINDER</div>
+          <div className={s.waitRow}>
+            <span className={s.waitText}>
+              {daysSince(task.waitingSince) > 0
+                ? `Waiting ${daysSince(task.waitingSince)}d — `
+                : ''}
+              flag after
+            </span>
+            <button
+              type="button"
+              className={s.waitStep}
+              aria-label="Fewer days"
+              onClick={() =>
+                set({
+                  waitRemindDays: Math.max(
+                    1,
+                    (task.waitRemindDays ?? WAIT_REMIND_DEFAULT) - 1,
+                  ),
+                })
+              }
+            >
+              −
+            </button>
+            <span className={s.waitDays}>
+              {task.waitRemindDays ?? WAIT_REMIND_DEFAULT}d
+            </span>
+            <button
+              type="button"
+              className={s.waitStep}
+              aria-label="More days"
+              onClick={() =>
+                set({
+                  waitRemindDays: (task.waitRemindDays ?? WAIT_REMIND_DEFAULT) + 1,
+                })
+              }
+            >
+              +
+            </button>
+          </div>
+        </>
+      )}
 
       {/* "Accept Changes" just closes — your edits already saved as you typed. */}
       <button type="button" className={s.done} onClick={closeOverlay}>

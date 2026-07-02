@@ -15,6 +15,23 @@
   box-shadow: inset 3px 0 0 var(--danger), var(--shadow-card);
   border-color: #f1cdc6;
 }
+/* Waiting-too-long cards get an amber left edge + chip. High priority wins. */
+.cardStale {
+  box-shadow: inset 3px 0 0 var(--warning), var(--shadow-card);
+  border-color: #ecd9b8;
+}
+.cardHigh.cardStale {
+  box-shadow: inset 3px 0 0 var(--danger), var(--shadow-card);
+  border-color: #f1cdc6;
+}
+.staleChip {
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: #fdf3e4;
+  color: #9a6b15;
+  font: 600 var(--d-tag-size) var(--font-sans);
+  white-space: nowrap;
+}
 
 /* One-tap complete: an empty ring on the left; a check fills in on press/hover. */
 .check {

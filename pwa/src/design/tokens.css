@@ -56,6 +56,17 @@
   --area-irf-text: #6a4fa0;
   --area-rover-bg: #e6f3f4;
   --area-rover-text: #2a7787;
+  /* Palette for user-created areas (cycled by color index). */
+  --area-c5-bg: #fdf3e4;
+  --area-c5-text: #9a6b15;
+  --area-c6-bg: #fbeef5;
+  --area-c6-text: #a84a77;
+  --area-c7-bg: #eceffc;
+  --area-c7-text: #4a55a8;
+  --area-c8-bg: #f0f7e6;
+  --area-c8-text: #5a7d1f;
+  --area-c9-bg: #eef1f4;
+  --area-c9-text: #5a6b7c;
 
   /* ---- Due-urgency chip (bg / text / border) ---- */
   --due-overdue-bg: #fdeceb;

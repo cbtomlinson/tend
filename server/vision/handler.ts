@@ -1,14 +1,14 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import {
-  AREAS,
   DEFAULT_MODEL,
   EXTRACTION_INSTRUCTION,
   SOURCES,
-  TOOL,
   buildSystem,
+  buildTool,
   parsePeople,
-  type Area,
+  sanitizeAreas,
+  sanitizePeople,
   type ImageMediaType,
   type Source,
 } from '../../supabase/functions/_shared/extraction';
@@ -29,9 +29,12 @@ export const ExtractionSchema = z.object({
   items: z.array(
     z.object({
       title: z.string().min(1),
-      area: z.enum(AREAS as unknown as [Area, ...Area[]]),
+      area: z.string().min(1),
     }),
   ),
+  phiSuspected: z.boolean().optional().default(false),
+  phiReason: z.string().optional(),
+  unknownPeople: z.array(z.string()).optional().default([]),
 });
 export type Extraction = z.infer<typeof ExtractionSchema>;
 
@@ -43,17 +46,23 @@ export interface ExtractArgs {
   model?: string;
   /** JSON array of {name, area, role?} — real names live in a secret, not in code. */
   peopleJson?: string;
+  /** The app's live area list (custom areas included). */
+  areas?: unknown;
+  /** People the user taught the app (name -> area; area:null = one-off). */
+  people?: unknown;
 }
 
 export async function extractFromImage(args: ExtractArgs): Promise<Extraction> {
   const { imageBase64, mediaType, apiKey, model, peopleJson } = args;
+  const areas = sanitizeAreas(args.areas);
+  const people = [...parsePeople(peopleJson), ...sanitizePeople(args.people)];
   const client = new Anthropic({ apiKey });
 
   const response = await client.messages.create({
     model: model || DEFAULT_MODEL,
     max_tokens: 4096,
-    system: buildSystem(parsePeople(peopleJson)),
-    tools: [TOOL as Anthropic.Tool],
+    system: buildSystem(people, areas),
+    tools: [buildTool(areas) as Anthropic.Tool],
     tool_choice: { type: 'tool', name: 'record_extraction' },
     messages: [
       {
@@ -74,5 +83,11 @@ export async function extractFromImage(args: ExtractArgs): Promise<Extraction> {
     throw new Error('vision: model did not return a structured extraction');
   }
   // zod validates the model's output against our schema before it's trusted.
-  return ExtractionSchema.parse(block.input);
+  const parsed = ExtractionSchema.parse(block.input);
+  const allowed = new Set(areas);
+  parsed.items = parsed.items.map((it) => ({
+    ...it,
+    area: allowed.has(it.area) ? it.area : areas[0],
+  }));
+  return parsed;
 }

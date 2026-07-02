@@ -18,6 +18,7 @@ import { CaptureOverlay } from '@/capture/CaptureOverlay';
 import { DetailSheet } from '@/detail/DetailSheet';
 import { EmailSheet } from '@/email/EmailSheet';
 import { NewBucketModal } from '@/board/NewBucketModal';
+import { NewAreaModal } from '@/board/NewAreaModal';
 import { useUI } from './uiState';
 import s from './App.module.css';
 
@@ -111,6 +112,7 @@ export function App() {
       {ui.overlay === 'detail' && <DetailSheet />}
       {ui.overlay === 'email' && <EmailSheet tasks={tasks} buckets={buckets} />}
       {ui.overlay === 'newbucket' && <NewBucketModal />}
+      {ui.overlay === 'newarea' && <NewAreaModal />}
 
       {/* DRAG CLONE */}
       {dragTask && (

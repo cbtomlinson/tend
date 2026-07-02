@@ -7,6 +7,7 @@ import {
   emailTitle,
   flatList,
   groupBlocks,
+  overdueWaiting,
   plainText,
   PRIO_DOT,
   type EmailFormat,
@@ -31,6 +32,7 @@ export function EmailSheet({ tasks, buckets }: { tasks: Task[]; buckets: Bucket[
   const plain = useMemo(() => plainText(tasks, buckets), [tasks, buckets]);
   const flat = useMemo(() => flatList(tasks, fmt, buckets), [tasks, fmt, buckets]);
   const groups = useMemo(() => groupBlocks(tasks, buckets), [tasks, buckets]);
+  const overdue = useMemo(() => overdueWaiting(tasks), [tasks]);
 
   const isPlain = fmt === 'plain';
   const isFull = fmt === 'full';
@@ -79,6 +81,28 @@ export function EmailSheet({ tasks, buckets }: { tasks: Task[]; buckets: Bucket[
       <div className={s.preview}>
         <div className={s.previewHead}>{emailTitle(fmt)}</div>
         <div className={s.previewBody}>
+          {!isPlain && overdue.length > 0 && (
+            <div>
+              <div className={s.groupName} style={{ color: '#9a6b15' }}>
+                Waiting too long
+              </div>
+              {overdue.map(({ task, days }) => (
+                <div key={task.id} className={s.groupItem}>
+                  <span className={s.bullet} style={{ color: '#9a6b15' }}>
+                    !
+                  </span>
+                  <div>
+                    <div>{task.title}</div>
+                    <div className={s.itemSub}>
+                      waiting {days}d{task.waiting ? ` on ${task.waiting}` : ''} ·{' '}
+                      {task.area}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {isPlain && <pre className={s.plain}>{plain}</pre>}
 
           {isFull &&

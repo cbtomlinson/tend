@@ -1,9 +1,15 @@
-import { useEffect, useRef } from 'react';
-import { Check, Plus, RotateCw, ShieldCheck, X } from 'lucide-react';
-import { commitCapture, useActiveTasks } from '@/data/store';
+import { useEffect, useMemo, useRef } from 'react';
+import { AlertTriangle, Check, Plus, RotateCw, ShieldCheck, X } from 'lucide-react';
+import {
+  commitCapture,
+  definePerson,
+  dismissPerson,
+  useActiveTasks,
+  usePeople,
+} from '@/data/store';
 import { buildReconcile } from '@/domain/reconcile';
 import { extractTasks } from '@/services/vision';
-import { areaBgVar, areaTextVar, nextArea } from '@/domain/areas';
+import { areaBgVar, areaTextVar, nextArea, useAreas } from '@/domain/areas';
 import { shortSource } from '@/domain/sources';
 import { SourceTag } from '@/components/tags';
 import { useUI } from '@/app/uiState';
@@ -11,6 +17,9 @@ import s from './CaptureOverlay.module.css';
 
 export function CaptureOverlay() {
   const board = useActiveTasks();
+  const areas = useAreas();
+  const people = usePeople();
+  const areaNames = useMemo(() => areas.map((a) => a.name), [areas]);
   const {
     captureStep,
     setCaptureStep,
@@ -98,9 +107,27 @@ export function CaptureOverlay() {
     patchReconcile((r) => ({
       ...r,
       newItems: r.newItems.map((n) =>
-        n.tid === tid ? { ...n, area: nextArea(n.area) } : n,
+        n.tid === tid ? { ...n, area: nextArea(n.area, areaNames) } : n,
       ),
     }));
+
+  // PHI advisory + names the scan saw that we don't know yet (live: answering
+  // a card removes it because the people table updates underneath).
+  const phiCaptures = captures.filter((c) => c.phiSuspected);
+  const knownNames = useMemo(
+    () => new Set(people.map((p) => p.name.toLowerCase())),
+    [people],
+  );
+  const newNames = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const c of captures) {
+      for (const n of c.unknownPeople ?? []) {
+        const key = n.trim().toLowerCase();
+        if (key && !knownNames.has(key) && !seen.has(key)) seen.set(key, n.trim());
+      }
+    }
+    return [...seen.values()];
+  }, [captures, knownNames]);
 
   const setDup = (tid: string, choice: 'keep' | 'merge') =>
     patchReconcile((r) => ({
@@ -251,6 +278,60 @@ export function CaptureOverlay() {
               {reconcile.sources.length === 1 ? 'list' : 'lists'} · checked against
               your board.
             </div>
+
+            {phiCaptures.length > 0 && (
+              <div className={s.phiWarn}>
+                <AlertTriangle size={15} className={s.phiWarnIcon} />
+                <div className={s.phiWarnText}>
+                  <b>Possible PHI spotted</b>
+                  {phiCaptures[0].phiReason ? ` — ${phiCaptures[0].phiReason}` : ''}.
+                  The photo was never stored. Consider rewording the task titles
+                  below before adding them.
+                </div>
+              </div>
+            )}
+
+            {newNames.length > 0 && (
+              <>
+                <div className={`${s.sectionLabel} ${s.labelPeople}`}>
+                  NEW NAMES · teach the scanner
+                </div>
+                {newNames.map((name) => (
+                  <div key={name} className={s.personCard}>
+                    <div className={s.personAsk}>
+                      Who is <b>{name}</b>? Pick their area and future scans will
+                      tag their tasks automatically.
+                    </div>
+                    <div className={s.personChips}>
+                      {areaNames.map((a) => (
+                        <button
+                          key={a}
+                          type="button"
+                          className={s.personChip}
+                          style={{ background: areaBgVar(a), color: areaTextVar(a) }}
+                          onClick={() => {
+                            void definePerson(name, a);
+                            flash(`${name} → ${a} — the scanner will remember`);
+                          }}
+                        >
+                          {a}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        className={s.personOneOff}
+                        onClick={() => {
+                          void dismissPerson(name);
+                          flash(`Okay — won't ask about ${name} again`);
+                        }}
+                      >
+                        One-off
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
 
             <div className={`${s.sectionLabel} ${s.labelNew}`}>NEW · will be added</div>
             {reconcile.newItems.map((n) => (

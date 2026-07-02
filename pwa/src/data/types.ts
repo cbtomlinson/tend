@@ -3,8 +3,30 @@
 /** Display labels for the four source lists. */
 export type Source = 'Zoho' | 'Epic SLG' | 'To Do' | 'Hand';
 
-/** Responsibility area — a filter/grouping dimension, NEVER relied on as color. */
-export type Area = 'ClinDoc' | 'OP Rehab' | 'Acute Rehab' | 'IRF' | 'Rover';
+/**
+ * Responsibility area — a filter/grouping dimension, NEVER relied on as color.
+ * User-manageable since v2 (stored in the `areas` table); plain string here.
+ */
+export type Area = string;
+
+/** A user-manageable area definition. `name` doubles as the id. */
+export interface AreaDef {
+  name: string;
+  /** Seeded areas can't be deleted. */
+  fixed?: boolean;
+  order: number;
+  /** Index into the area color palette (tokens.css). */
+  color: number;
+}
+
+/**
+ * A person the scan can use to auto-assign areas. `area: null` means the user
+ * marked the name as a one-off — known, but no area hint and never re-asked.
+ */
+export interface Person {
+  name: string;
+  area: Area | null;
+}
 
 export type Prio = 'High' | 'Med' | 'Low';
 
@@ -33,6 +55,10 @@ export interface Task {
   ref: string;
   /** Assignee for Waiting On, e.g. "Epic TS" or a teammate's name. */
   waiting: string;
+  /** ISO date (YYYY-MM-DD) the task entered the Waiting On bucket ('' = n/a). */
+  waitingSince?: string;
+  /** Per-task override for the waiting reminder threshold (days). */
+  waitRemindDays?: number;
   /** Age / added marker, e.g. "5d" or "now". */
   added: string;
   status: TaskStatus;

@@ -1,4 +1,5 @@
 import type { Area, Source } from '@/data/types';
+import { db } from '@/data/db';
 import { apiPost } from './api';
 
 /*
@@ -21,6 +22,11 @@ export interface ExtractedItem {
 export interface Extraction {
   source: Source;
   items: ExtractedItem[];
+  /** Advisory only: the model thought the photo may contain patient info. */
+  phiSuspected?: boolean;
+  phiReason?: string;
+  /** People named on the list that aren't in the known-people set. */
+  unknownPeople?: string[];
 }
 export interface ExtractResult {
   extraction: Extraction;
@@ -44,7 +50,15 @@ export async function extractTasks(image: Blob): Promise<ExtractResult> {
   const mediaType = image.type || 'image/jpeg';
   const imageBase64 = await blobToBase64(image);
 
-  const res = await apiPost('vision', { imageBase64, mediaType });
+  // Send the live area list (so scans can assign custom areas) and the learned
+  // people (name -> area hints; area:null = known one-off, don't re-flag).
+  const [areaDefs, people] = await Promise.all([
+    db.areas.orderBy('order').toArray(),
+    db.people.toArray(),
+  ]);
+  const areas = areaDefs.map((a) => a.name);
+
+  const res = await apiPost('vision', { imageBase64, mediaType, areas, people });
 
   if (res.status === 503) {
     // Proxy reachable but no API key configured — demo with sample data.

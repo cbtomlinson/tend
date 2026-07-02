@@ -1,8 +1,14 @@
 import { useMemo } from 'react';
-import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
 import type { Bucket, Task } from '@/data/types';
-import { ALL_AREAS } from '@/domain/areas';
-import { completeTask, deleteBucket, moveBucket, restoreTask } from '@/data/store';
+import { useAreas } from '@/domain/areas';
+import {
+  completeTask,
+  deleteArea,
+  deleteBucket,
+  moveBucket,
+  restoreTask,
+} from '@/data/store';
 import { useUI, type AreaFilter } from '@/app/uiState';
 import type { DragApi } from './useDrag';
 import { TaskCard } from './TaskCard';
@@ -22,11 +28,15 @@ interface Props {
   drag: DragApi;
 }
 
-const AREA_FILTERS: AreaFilter[] = ['All', ...ALL_AREAS];
-
 export function Board({ tasks, buckets, drag }: Props) {
   const { filterArea, setFilterArea, groupBy, setGroupBy, openOverlay, openDetail, flash } =
     useUI();
+  const areas = useAreas();
+
+  const areaFilters: AreaFilter[] = useMemo(
+    () => ['All', ...areas.map((a) => a.name)],
+    [areas],
+  );
 
   const shown = useMemo(
     () => tasks.filter((t) => filterArea === 'All' || t.area === filterArea),
@@ -35,9 +45,14 @@ export function Board({ tasks, buckets, drag }: Props) {
 
   const groups: Group[] = useMemo(() => {
     if (groupBy === 'Area') {
-      return ALL_AREAS.filter((a) => filterArea === 'All' || filterArea === a).map(
-        (a) => ({ id: a, name: a, tasks: shown.filter((t) => t.area === a), fixed: true }),
-      );
+      return areas
+        .filter((a) => filterArea === 'All' || filterArea === a.name)
+        .map((a) => ({
+          id: a.name,
+          name: a.name,
+          tasks: shown.filter((t) => t.area === a.name),
+          fixed: !!a.fixed,
+        }));
     }
     return buckets.map((b) => ({
       id: b.id,
@@ -45,7 +60,7 @@ export function Board({ tasks, buckets, drag }: Props) {
       tasks: shown.filter((t) => t.bucket === b.id),
       fixed: !!b.fixed,
     }));
-  }, [groupBy, filterArea, shown, buckets]);
+  }, [groupBy, filterArea, shown, buckets, areas]);
 
   const onCompleteTask = async (t: Task) => {
     await completeTask(t.id);
@@ -66,10 +81,23 @@ export function Board({ tasks, buckets, drag }: Props) {
     flash(moved ? `Bucket deleted · ${moved} moved to Later` : 'Bucket deleted');
   };
 
+  const onDeleteArea = async (g: Group) => {
+    const dest = areas[0]?.name ?? 'ClinDoc';
+    if (
+      !window.confirm(
+        `Delete the "${g.name}" area? Any tasks tagged with it move to ${dest} — nothing is deleted.`,
+      )
+    )
+      return;
+    if (filterArea === g.name) setFilterArea('All');
+    const moved = await deleteArea(g.id);
+    flash(moved ? `Area deleted · ${moved} moved to ${dest}` : 'Area deleted');
+  };
+
   return (
     <div className={s.board}>
       <div className={s.chips}>
-        {AREA_FILTERS.map((a) => (
+        {areaFilters.map((a) => (
           <button
             key={a}
             type="button"
@@ -79,6 +107,14 @@ export function Board({ tasks, buckets, drag }: Props) {
             {a}
           </button>
         ))}
+        <button
+          type="button"
+          className={`${s.chip} ${s.chipAdd}`}
+          aria-label="Add an area"
+          onClick={() => openOverlay('newarea')}
+        >
+          <Plus size={12} strokeWidth={2.5} />
+        </button>
       </div>
 
       <div className={s.controls}>
@@ -143,6 +179,18 @@ export function Board({ tasks, buckets, drag }: Props) {
                       <Trash2 size={14} />
                     </button>
                   )}
+                </div>
+              )}
+              {groupBy === 'Area' && !g.fixed && (
+                <div className={s.bucketTools}>
+                  <button
+                    type="button"
+                    className={s.deleteBucket}
+                    aria-label={`Delete ${g.name} area`}
+                    onClick={() => onDeleteArea(g)}
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               )}
             </div>

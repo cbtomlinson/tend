@@ -1,6 +1,7 @@
 import type { Bucket, Prio, Task } from '@/data/types';
+import { WAIT_REMIND_DEFAULT } from '@/data/store';
 import { shortSource } from './sources';
-import { fmtShort, weekday } from './dates';
+import { daysSince, fmtShort, weekday } from './dates';
 
 /*
  * Builds the four email previews from the current board.
@@ -44,6 +45,17 @@ export interface GroupBlock {
 const sub = (t: Task) =>
   `${t.area} - ${shortSource(t.source)}${t.due ? ` - ${t.due}` : ''}`;
 
+/** Tasks sitting in Waiting On past their reminder threshold, oldest first. */
+export function overdueWaiting(
+  active: Task[],
+): { task: Task; days: number }[] {
+  return active
+    .filter((t) => t.bucket === 'waiting' && t.waitingSince)
+    .map((t) => ({ task: t, days: daysSince(t.waitingSince) }))
+    .filter(({ task, days }) => days >= (task.waitRemindDays ?? WAIT_REMIND_DEFAULT))
+    .sort((a, b) => b.days - a.days);
+}
+
 export function flatList(
   active: Task[],
   format: EmailFormat,
@@ -78,6 +90,15 @@ export function groupBlocks(active: Task[], buckets: Bucket[]): GroupBlock[] {
 
 export function plainText(active: Task[], buckets: Bucket[]): string {
   let out = `TEND - ${brandDate()}\n`;
+  const overdue = overdueWaiting(active);
+  if (overdue.length) {
+    out += `\nWAITING TOO LONG\n`;
+    for (const { task, days } of overdue) {
+      out += `  ! ${task.title}  [waiting ${days}d${
+        task.waiting ? ` on ${task.waiting}` : ''
+      }]\n`;
+    }
+  }
   for (const b of buckets) {
     const items = active.filter((t) => t.bucket === b.id);
     if (!items.length) continue;
@@ -132,6 +153,21 @@ export function emailHtml(
   const item = (title: string, s: string) =>
     `<div style="margin:0 0 8px"><strong>${esc(title)}</strong>${subLine(s)}</div>`;
 
+  // "Waiting too long" always leads (plain text builds its own section).
+  const overdue = format === 'plain' ? [] : overdueWaiting(active);
+  const overdueBlock = overdue.length
+    ? `<h3 style="font-size:14px;color:#9a6b15;margin:0 0 6px">Waiting too long</h3>` +
+      overdue
+        .map(({ task, days }) =>
+          item(
+            task.title,
+            `waiting ${days}d${task.waiting ? ` on ${task.waiting}` : ''} - ${task.area}`,
+          ),
+        )
+        .join('') +
+      `<hr style="border:none;border-top:1px solid #ddd;margin:14px 0">`
+    : '';
+
   let body: string;
   if (format === 'plain') {
     body = `<pre style="white-space:pre-wrap;font-family:Arial,sans-serif;font-size:13px;color:#333;margin:0">${esc(
@@ -154,7 +190,7 @@ export function emailHtml(
   return `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#222;max-width:560px">
   <h2 style="margin:0 0 2px">Tend</h2>
   <p style="color:#777;font-size:13px;margin:0 0 16px">${esc(emailTitle(format))}</p>
-  ${body}
+  ${overdueBlock}${body}
   <p style="color:#999;font-size:12px;margin-top:20px">Sent from Tend.</p>
 </div>`;
 }
