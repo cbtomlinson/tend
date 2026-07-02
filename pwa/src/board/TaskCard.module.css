@@ -54,13 +54,22 @@
   opacity: 0;
   transition: opacity 0.12s;
 }
-.check:hover .checkRing,
 .check:active .checkRing {
   color: var(--success);
 }
-.check:hover .checkMark,
 .check:active .checkMark {
   opacity: 1;
+}
+/* Hover preview only on real pointers — on touch, iOS "sticks" :hover to the
+   next card that slides under the finger after a complete, making it look
+   pre-checked. */
+@media (hover: hover) and (pointer: fine) {
+  .check:hover .checkRing {
+    color: var(--success);
+  }
+  .check:hover .checkMark {
+    opacity: 1;
+  }
 }
 
 .content {
