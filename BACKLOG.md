@@ -21,6 +21,13 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## Done
 
+- 2026-07-01 — Punch list #3: **custom areas** (+ chip to add, trash in "By area"
+  view to delete; scans auto-assign them), **waiting-too-long flags** (amber card
+  edge + "waiting Nd" chip after 7d, per-task threshold stepper in the detail
+  sheet, "Waiting too long" section atop board emails), **PHI soft banner** on
+  capture review (advisory only; photo still never stored), and **scan learns
+  new people** ("Who is X?" cards on review → pick an area or One-off; stored
+  on-device, sent with each scan alongside the server PEOPLE_JSON).
 - 2026-07-01 — **Vision model switched to Sonnet** (`VISION_MODEL=claude-sonnet-4-6`
   Supabase secret). 4-note bake-off: Sonnet matched Opus on every note at ~1/10
   the cost (~$0.01 vs ~$0.11/scan); Haiku misread something on all 4 (2024→2026,
