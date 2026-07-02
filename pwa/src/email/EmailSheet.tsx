@@ -203,7 +203,7 @@ export function EmailSheet({ tasks, buckets }: { tasks: Task[]; buckets: Bucket[
       <div className={s.backupRow}>
         <DatabaseBackup size={14} className={s.backupIcon} />
         <span className={s.backupText}>
-          Backups email you a restore file every few days.
+          A backup emails itself daily on your first open after 6 pm.
         </span>
         <button type="button" className={s.backupBtn} onClick={onBackupNow}>
           Back up now

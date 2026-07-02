@@ -63,15 +63,24 @@ export function App() {
     }
   }, [tasks.length]);
 
-  // Auto-backup: when deployed, email a restore file every 3 days (silently).
-  const backupTried = useRef(false);
+  // Auto-backup: when deployed, email a restore file DAILY, anchored to 6 pm.
+  // The app can only send while open, so the first open (or return to the app)
+  // after 6 pm sends it; a missed evening is caught up on the next open.
+  const backupInFlight = useRef(false);
   useEffect(() => {
-    if (!REMOTE || backupTried.current || tasks.length === 0) return;
-    backupTried.current = true;
-    void (async () => {
-      const last = (await db.meta.get('lastBackupAt'))?.value ?? 0;
-      if (Date.now() - last < 3 * 86400000) return;
+    if (!REMOTE || tasks.length === 0) return;
+
+    const attempt = async () => {
+      if (backupInFlight.current) return;
+      backupInFlight.current = true;
       try {
+        const last = (await db.meta.get('lastBackupAt'))?.value ?? 0;
+        // Most recent 6 pm boundary (today's if past it, else yesterday's).
+        const cutoff = new Date();
+        cutoff.setHours(18, 0, 0, 0);
+        if (Date.now() < cutoff.getTime()) cutoff.setDate(cutoff.getDate() - 1);
+        if (last >= cutoff.getTime()) return;
+
         const backup = await buildBackup();
         const res = await sendBoardEmail({
           subject: `Tend backup - ${brandDate()}`,
@@ -83,12 +92,23 @@ export function App() {
         });
         if (res.ok) {
           await db.meta.put({ key: 'lastBackupAt', value: Date.now() });
-          ui.flash('Backup emailed to you ✓');
+          ui.flash('Daily backup emailed ✓');
         }
       } catch {
-        /* offline etc. — retry next launch */
+        /* offline etc. — retry on next open/return */
+      } finally {
+        backupInFlight.current = false;
       }
-    })();
+    };
+
+    void attempt();
+    // Also fire when returning to an already-open app (e.g. it crosses 6 pm
+    // in the background and she switches back to it).
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void attempt();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tasks.length]);
 
