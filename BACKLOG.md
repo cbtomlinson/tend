@@ -21,6 +21,17 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## Done
 
+- 2026-07-01 — **Full security + bug review.** Fixed: password gate now
+  timing-safe with per-IP rate limiting (8 fails/10 min → 429); CORS locked to
+  tend.littletomato.dev (was `*`); vision endpoint rejects missing/oversized
+  (>5 MB) images and unknown media types before spending tokens; area/people
+  names stripped of control chars before entering the AI prompt; backup files
+  validated field-by-field before restore; bucket add uses max-order+1 (delete
+  → add could collide orders and break reordering) + duplicate-name guard;
+  auto-backup email body no longer stale on the visibility trigger;
+  verifyPassword only accepts a real 200 (429 no longer unlocks); login field
+  autocompletes from the password manager. Repo hygiene verified clean (no
+  secrets tracked). Recommendations list delivered in chat.
 - 2026-07-01 — **Data-loss protection** (after tasks vanished on device):
   `navigator.storage.persist()` at boot; red "your saved tasks are missing"
   banner when the DB comes up empty on a device that had tasks (localStorage
