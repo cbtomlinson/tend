@@ -24,8 +24,8 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 - 2026-07-01 — **Data-loss protection** (after tasks vanished on device):
   `navigator.storage.persist()` at boot; red "your saved tasks are missing"
   banner when the DB comes up empty on a device that had tasks (localStorage
-  sentinel); **auto backup email daily, anchored to 6 pm** (sends on first
-  open/return after 6 pm, catches up next open; JSON restore file attached,
+  sentinel); **auto backup email daily, anchored to 5 pm** (sends on first
+  open/return after 5 pm, catches up next open; JSON restore file attached,
   deployed app only) + "Back up now" / "Restore" in the Email sheet. Also
   renamed the new-name "One-off" button to **"No thanks"** (session-only skip —
   it can ask again next scan). Note: OS storage eviction gives no advance
