@@ -17,15 +17,17 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## In progress
 
-- **Complete a task without opening it.** Need a one-tap "done" affordance on the
-  card itself (check circle + Undo is the leading candidate). Awaiting decision.
-- **API usage / cost visibility + model choice.** Show real per-scan token/cost,
-  and/or an in-app model selector (Opus / Sonnet / Haiku) to test handwriting
-  accuracy vs. cost. Vision fn already honors a `VISION_MODEL` env var. Awaiting
-  decision on scope.
+- _(nothing right now)_
 
 ## Done
 
+- 2026-07-01 — **Vision model switched to Sonnet** (`VISION_MODEL=claude-sonnet-4-6`
+  Supabase secret). 4-note bake-off: Sonnet matched Opus on every note at ~1/10
+  the cost (~$0.01 vs ~$0.11/scan); Haiku misread something on all 4 (2024→2026,
+  ZFA→2FA, Pediatric→Biometric) — disqualified. Revert = set the secret back to
+  `claude-opus-4-8`. Bake-off harness: scratchpad `bakeoff.mjs` (session temp).
+- 2026-07-01 — One-tap complete: check circle on every card + "Undo" toast
+  (5s). Also tightened area filter chips so all six (incl. Rover) fit on one line.
 - 2026-06-30 — Punch list #2: "Today" → "Today's Priorities" (with migration),
   added **Rover** area, "Done" button → "Accept Changes", drag no longer selects
   card text, and the board auto-scrolls when you drag near the top/bottom edge.
