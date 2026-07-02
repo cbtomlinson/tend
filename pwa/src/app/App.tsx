@@ -63,9 +63,9 @@ export function App() {
     }
   }, [tasks.length]);
 
-  // Auto-backup: when deployed, email a restore file DAILY, anchored to 6 pm.
+  // Auto-backup: when deployed, email a restore file DAILY, anchored to 5 pm.
   // The app can only send while open, so the first open (or return to the app)
-  // after 6 pm sends it; a missed evening is caught up on the next open.
+  // after 5 pm sends it; a missed evening is caught up on the next open.
   const backupInFlight = useRef(false);
   useEffect(() => {
     if (!REMOTE || tasks.length === 0) return;
@@ -75,9 +75,9 @@ export function App() {
       backupInFlight.current = true;
       try {
         const last = (await db.meta.get('lastBackupAt'))?.value ?? 0;
-        // Most recent 6 pm boundary (today's if past it, else yesterday's).
+        // Most recent 5 pm boundary (today's if past it, else yesterday's).
         const cutoff = new Date();
-        cutoff.setHours(18, 0, 0, 0);
+        cutoff.setHours(17, 0, 0, 0);
         if (Date.now() < cutoff.getTime()) cutoff.setDate(cutoff.getDate() - 1);
         if (last >= cutoff.getTime()) return;
 
@@ -102,7 +102,7 @@ export function App() {
     };
 
     void attempt();
-    // Also fire when returning to an already-open app (e.g. it crosses 6 pm
+    // Also fire when returning to an already-open app (e.g. it crosses 5 pm
     // in the background and she switches back to it).
     const onVisible = () => {
       if (document.visibilityState === 'visible') void attempt();
