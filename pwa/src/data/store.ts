@@ -203,12 +203,21 @@ export async function moveTask(
   });
 }
 
-export async function addBucket(name: string): Promise<void> {
+export async function addBucket(name: string): Promise<boolean> {
   const trimmed = name.trim();
-  if (!trimmed) return;
-  const id = `b${await takeId()}`;
-  const count = await db.buckets.count();
-  await db.buckets.put({ id, name: trimmed, order: count });
+  if (!trimmed) return false;
+  return db.transaction('rw', db.buckets, db.meta, async () => {
+    const all = await db.buckets.toArray();
+    if (all.some((b) => b.name.toLowerCase() === trimmed.toLowerCase())) {
+      return false;
+    }
+    const id = `b${await takeId()}`;
+    // max+1, not count: after a delete-then-add, count can collide with an
+    // existing order, which breaks the up/down reorder swap.
+    const maxOrder = Math.max(-1, ...all.map((b) => b.order));
+    await db.buckets.put({ id, name: trimmed, order: maxOrder + 1 });
+    return true;
+  });
 }
 
 /** Move a bucket one step up or down by swapping its order with its neighbor. */

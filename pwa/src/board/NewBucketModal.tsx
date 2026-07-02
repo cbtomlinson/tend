@@ -13,9 +13,9 @@ export function NewBucketModal() {
       closeOverlay();
       return;
     }
-    await addBucket(trimmed);
+    const ok = await addBucket(trimmed);
     closeOverlay();
-    flash('Bucket added');
+    flash(ok ? 'Bucket added' : 'That bucket already exists');
   };
 
   return (

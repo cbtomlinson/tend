@@ -9,6 +9,7 @@ import {
   restoreBackup,
 } from '@/domain/backup';
 import {
+  brandDate,
   emailHtml,
   emailSubject,
   emailTitle,
@@ -71,7 +72,7 @@ export function EmailSheet({ tasks, buckets }: { tasks: Task[]; buckets: Bucket[
   const onBackupNow = async () => {
     const backup = await buildBackup();
     const res = await sendBoardEmail({
-      subject: `Tend backup - ${emailTitle('full').split(' - ')[1] ?? ''}`.trim(),
+      subject: `Tend backup - ${brandDate()}`,
       html: emailHtml(tasks, buckets, 'full'),
       text: plain,
       toKindle: false,

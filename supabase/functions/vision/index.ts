@@ -10,7 +10,7 @@ import {
   sanitizeAreas,
   sanitizePeople,
 } from '../_shared/extraction.ts';
-import { authorized, json, preflight } from '../_shared/http.ts';
+import { gate, json, preflight } from '../_shared/http.ts';
 
 /*
  * Vision/OCR Edge Function. PHI: the image is in memory only — never logged,
@@ -37,7 +37,8 @@ const ExtractionSchema = z.object({
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return preflight();
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
-  if (!authorized(req)) return json({ error: 'unauthorized' }, 401);
+  const denied = await gate(req);
+  if (denied) return denied;
 
   // Read the body once. A {ping:true} body is just a password check (used by the
   // login screen) — the password already passed the gate above, so return ok.
@@ -57,6 +58,17 @@ Deno.serve(async (req: Request) => {
 
   const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
   if (!apiKey) return json({ error: 'not_configured' }, 503);
+
+  // Reject malformed/oversized payloads before spending model tokens.
+  const MEDIA_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (
+    typeof body.imageBase64 !== 'string' ||
+    body.imageBase64.length === 0 ||
+    body.imageBase64.length > 7_000_000 || // ~5 MB image, the API's own ceiling
+    !MEDIA_TYPES.includes(body.mediaType ?? '')
+  ) {
+    return json({ error: 'bad_image' }, 400);
+  }
 
   try {
     const { imageBase64, mediaType } = body;

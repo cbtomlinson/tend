@@ -81,11 +81,17 @@ export function App() {
         if (Date.now() < cutoff.getTime()) cutoff.setDate(cutoff.getDate() - 1);
         if (last >= cutoff.getTime()) return;
 
-        const backup = await buildBackup();
+        // Read fresh from the DB (not the render closure) — the visibility
+        // trigger can fire long after this effect's tasks snapshot was taken.
+        const [backup, allTasks, allBuckets] = await Promise.all([
+          buildBackup(),
+          db.tasks.where('status').equals('active').sortBy('order'),
+          db.buckets.orderBy('order').toArray(),
+        ]);
         const res = await sendBoardEmail({
           subject: `Tend backup - ${brandDate()}`,
-          html: emailHtml(tasks, buckets, 'full'),
-          text: plainText(tasks, buckets),
+          html: emailHtml(allTasks, allBuckets, 'full'),
+          text: plainText(allTasks, allBuckets),
           toKindle: false,
           backupJson: JSON.stringify(backup),
           backupFilename: backupFilename(),

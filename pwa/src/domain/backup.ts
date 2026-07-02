@@ -53,8 +53,26 @@ export interface RestoreCounts {
 /** Parse + sanity-check a backup file's text. Throws on anything unusable. */
 export function parseBackup(text: string): Backup {
   const data = JSON.parse(text) as Backup;
-  if (data?.app !== 'tend' || !Array.isArray(data.tasks)) {
+  if (
+    data?.app !== 'tend' ||
+    !Array.isArray(data.tasks) ||
+    !Array.isArray(data.buckets ?? []) ||
+    !Array.isArray(data.areas ?? []) ||
+    !Array.isArray(data.people ?? [])
+  ) {
     throw new Error('not a Tend backup');
+  }
+  // Every task must at least be storable and renderable.
+  for (const t of data.tasks) {
+    const idOk = typeof t?.id === 'number' || typeof t?.id === 'string';
+    if (!idOk || typeof t?.title !== 'string') {
+      throw new Error('corrupt backup: bad task entry');
+    }
+  }
+  for (const b of data.buckets ?? []) {
+    if (typeof b?.id !== 'string' || typeof b?.name !== 'string') {
+      throw new Error('corrupt backup: bad bucket entry');
+    }
   }
   return data;
 }

@@ -36,6 +36,7 @@ export function LoginGate({ onUnlock }: Props) {
           value={pw}
           autoFocus
           placeholder="Password"
+          autoComplete="current-password"
           disabled={checking}
           onChange={(e) => setPw(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit()}

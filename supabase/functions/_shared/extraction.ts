@@ -17,12 +17,18 @@ export const SOURCES: Source[] = ['Zoho', 'Epic SLG', 'To Do', 'Hand'];
 /** Default areas — used when the client doesn't send its live list. */
 export const AREAS: Area[] = ['ClinDoc', 'OP Rehab', 'Acute Rehab', 'IRF', 'Rover'];
 
+/** Collapse control chars/newlines — these strings are spliced into the prompt. */
+function oneLine(s: string): string {
+  // deno-lint-ignore no-control-regex
+  return s.replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 /** Clamp a client-supplied area list to something sane (or fall back). */
 export function sanitizeAreas(input: unknown): string[] {
   if (!Array.isArray(input)) return AREAS;
   const clean = input
     .filter((a): a is string => typeof a === 'string')
-    .map((a) => a.trim())
+    .map((a) => oneLine(a))
     .filter((a) => a.length > 0 && a.length <= 40)
     .slice(0, 20);
   return clean.length ? clean : AREAS;
@@ -53,7 +59,7 @@ export function sanitizePeople(input: unknown): Person[] {
         ((p as { area?: unknown }).area === null ||
           typeof (p as { area?: unknown }).area === 'string'),
     )
-    .map((p) => ({ name: p.name.trim().slice(0, 60), area: p.area }))
+    .map((p) => ({ name: oneLine(p.name).slice(0, 60), area: p.area }))
     .filter((p) => p.name.length > 0)
     .slice(0, 100);
 }
@@ -125,9 +131,6 @@ export function buildTool(areas: string[] = AREAS) {
     },
   };
 }
-
-/** Back-compat static tool (default areas). */
-export const TOOL = buildTool();
 
 /** The user-turn instruction sent alongside the image. */
 export const EXTRACTION_INSTRUCTION =

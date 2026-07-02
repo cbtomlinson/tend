@@ -62,7 +62,8 @@ export async function verifyPassword(candidate: string): Promise<boolean> {
       headers: { 'content-type': 'application/json', 'x-app-password': candidate },
       body: JSON.stringify({ ping: true }),
     });
-    return res.status !== 401;
+    // Only a real 200 counts — 401 is wrong password, 429 is rate-limited.
+    return res.ok;
   } catch {
     return false;
   }

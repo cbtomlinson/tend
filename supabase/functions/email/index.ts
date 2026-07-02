@@ -1,5 +1,5 @@
 import { Resend } from 'npm:resend@4.8.0';
-import { authorized, json, preflight } from '../_shared/http.ts';
+import { gate, json, preflight } from '../_shared/http.ts';
 
 /*
  * Email Edge Function (Resend). Sends the rendered board to the user's inbox,
@@ -15,7 +15,8 @@ function toBase64(html: string): string {
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return preflight();
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
-  if (!authorized(req)) return json({ error: 'unauthorized' }, 401);
+  const denied = await gate(req);
+  if (denied) return denied;
 
   const apiKey = Deno.env.get('RESEND_API_KEY');
   const to = Deno.env.get('EMAIL_TO');
