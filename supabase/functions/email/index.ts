@@ -25,10 +25,32 @@ Deno.serve(async (req: Request) => {
   const kindleTo = Deno.env.get('KINDLE_TO') || '';
 
   try {
-    const { subject, html, text, toKindle } = await req.json();
+    const { subject, html, text, toKindle, backupJson, backupFilename } =
+      await req.json();
     const resend = new Resend(apiKey);
 
-    const inbox = await resend.emails.send({ from, to, subject, html, text });
+    // Optional board-backup attachment (a JSON restore file, ≤2 MB).
+    const attachments =
+      typeof backupJson === 'string' && backupJson.length < 2_000_000
+        ? [
+            {
+              filename:
+                typeof backupFilename === 'string' && backupFilename
+                  ? backupFilename
+                  : 'tend-backup.json',
+              content: toBase64(backupJson),
+            },
+          ]
+        : undefined;
+
+    const inbox = await resend.emails.send({
+      from,
+      to,
+      subject,
+      html,
+      text,
+      attachments,
+    });
     if (inbox.error) {
       return json({ ok: false, message: `Send failed: ${inbox.error.message}` });
     }

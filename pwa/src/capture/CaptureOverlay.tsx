@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, Check, Plus, RotateCw, ShieldCheck, X } from 'lucide-react';
 import {
   commitCapture,
   definePerson,
-  dismissPerson,
   useActiveTasks,
   usePeople,
 } from '@/data/store';
@@ -113,6 +112,8 @@ export function CaptureOverlay() {
 
   // PHI advisory + names the scan saw that we don't know yet (live: answering
   // a card removes it because the people table updates underneath).
+  // "No thanks" only skips a name for THIS capture session — it can ask again.
+  const [skippedNames, setSkippedNames] = useState<string[]>([]);
   const phiCaptures = captures.filter((c) => c.phiSuspected);
   const knownNames = useMemo(
     () => new Set(people.map((p) => p.name.toLowerCase())),
@@ -123,11 +124,17 @@ export function CaptureOverlay() {
     for (const c of captures) {
       for (const n of c.unknownPeople ?? []) {
         const key = n.trim().toLowerCase();
-        if (key && !knownNames.has(key) && !seen.has(key)) seen.set(key, n.trim());
+        if (
+          key &&
+          !knownNames.has(key) &&
+          !skippedNames.includes(key) &&
+          !seen.has(key)
+        )
+          seen.set(key, n.trim());
       }
     }
     return [...seen.values()];
-  }, [captures, knownNames]);
+  }, [captures, knownNames, skippedNames]);
 
   const setDup = (tid: string, choice: 'keep' | 'merge') =>
     patchReconcile((r) => ({
@@ -320,12 +327,11 @@ export function CaptureOverlay() {
                       <button
                         type="button"
                         className={s.personOneOff}
-                        onClick={() => {
-                          void dismissPerson(name);
-                          flash(`Okay — won't ask about ${name} again`);
-                        }}
+                        onClick={() =>
+                          setSkippedNames((prev) => [...prev, name.toLowerCase()])
+                        }
                       >
-                        One-off
+                        No thanks
                       </button>
                     </div>
                   </div>

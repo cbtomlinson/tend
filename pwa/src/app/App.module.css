@@ -120,6 +120,38 @@
   margin-top: 7px;
 }
 
+/* Loud "your data is gone" banner — never silent about data loss. */
+.dataWarn {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 12px 14px 0;
+  padding: 11px 12px;
+  background: #fdecea;
+  border: 1px solid #f1cdc6;
+  border-radius: 10px;
+}
+.dataWarnIcon {
+  flex: none;
+  color: var(--danger);
+  margin-top: 1px;
+}
+.dataWarnText {
+  flex: 1;
+  font: 400 12.5px var(--font-sans);
+  color: #7c2d24;
+  line-height: 1.45;
+}
+.dataWarnClose {
+  flex: none;
+  border: none;
+  background: transparent;
+  color: var(--danger);
+  font: 700 12px var(--font-sans);
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
 .toastWrap {
   position: absolute;
   left: 0;

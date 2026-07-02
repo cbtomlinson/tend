@@ -14,6 +14,9 @@ export interface SendArgs {
   html: string;
   text: string;
   toKindle: boolean;
+  /** Optional JSON snapshot attached to the inbox email as a restore file. */
+  backupJson?: string;
+  backupFilename?: string;
 }
 export interface SendResult {
   ok: boolean;

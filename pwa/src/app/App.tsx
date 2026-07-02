@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from 'react';
 import {
+  AlertTriangle,
   Archive as ArchiveIcon,
   Camera,
   LayoutGrid,
@@ -7,7 +9,11 @@ import {
   MonitorSmartphone,
 } from 'lucide-react';
 import { REMOTE, lock } from '@/services/api';
+import { db } from '@/data/db';
 import { useActiveTasks, useBuckets } from '@/data/store';
+import { backupFilename, buildBackup } from '@/domain/backup';
+import { brandDate, emailHtml, plainText } from '@/domain/emailFormats';
+import { sendBoardEmail } from '@/services/email';
 import { weekday } from '@/domain/dates';
 import { AreaTag, SourceTag } from '@/components/tags';
 import { Board } from '@/board/Board';
@@ -22,11 +28,69 @@ import { NewAreaModal } from '@/board/NewAreaModal';
 import { useUI } from './uiState';
 import s from './App.module.css';
 
+/** localStorage sentinel: "this device has held real tasks before". */
+const HAD_TASKS_KEY = 'tend.hadTasks';
+
 export function App() {
   const tasks = useActiveTasks();
   const buckets = useBuckets();
   const ui = useUI();
   const drag = useDrag(ui.groupBy);
+  const [dataMissing, setDataMissing] = useState(false);
+
+  // Data-loss detector: remember (outside IndexedDB) that tasks existed; if the
+  // DB later comes up empty, say so loudly instead of showing a silent fresh board.
+  useEffect(() => {
+    void (async () => {
+      const count = await db.tasks.count();
+      let had = '';
+      try {
+        had = localStorage.getItem(HAD_TASKS_KEY) ?? '';
+      } catch {
+        /* private mode */
+      }
+      if (count === 0 && had) setDataMissing(true);
+    })();
+  }, []);
+  useEffect(() => {
+    if (tasks.length > 0) {
+      setDataMissing(false);
+      try {
+        localStorage.setItem(HAD_TASKS_KEY, String(Date.now()));
+      } catch {
+        /* private mode */
+      }
+    }
+  }, [tasks.length]);
+
+  // Auto-backup: when deployed, email a restore file every 3 days (silently).
+  const backupTried = useRef(false);
+  useEffect(() => {
+    if (!REMOTE || backupTried.current || tasks.length === 0) return;
+    backupTried.current = true;
+    void (async () => {
+      const last = (await db.meta.get('lastBackupAt'))?.value ?? 0;
+      if (Date.now() - last < 3 * 86400000) return;
+      try {
+        const backup = await buildBackup();
+        const res = await sendBoardEmail({
+          subject: `Tend backup - ${brandDate()}`,
+          html: emailHtml(tasks, buckets, 'full'),
+          text: plainText(tasks, buckets),
+          toKindle: false,
+          backupJson: JSON.stringify(backup),
+          backupFilename: backupFilename(),
+        });
+        if (res.ok) {
+          await db.meta.put({ key: 'lastBackupAt', value: Date.now() });
+          ui.flash('Backup emailed to you ✓');
+        }
+      } catch {
+        /* offline etc. — retry next launch */
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tasks.length]);
 
   const dragTask = drag.dragId
     ? tasks.find((t) => String(t.id) === String(drag.dragId))
@@ -66,6 +130,31 @@ export function App() {
 
       {/* MAIN */}
       <div className={s.main}>
+        {dataMissing && (
+          <div className={s.dataWarn}>
+            <AlertTriangle size={16} className={s.dataWarnIcon} />
+            <div className={s.dataWarnText}>
+              <b>Your saved tasks are missing from this device.</b> The browser
+              may have cleared the app&apos;s storage. Open <b>Email</b> below and
+              use <b>Restore backup</b> with the file from your latest
+              &ldquo;Tend backup&rdquo; email.
+            </div>
+            <button
+              type="button"
+              className={s.dataWarnClose}
+              onClick={() => {
+                setDataMissing(false);
+                try {
+                  localStorage.removeItem(HAD_TASKS_KEY);
+                } catch {
+                  /* ignore */
+                }
+              }}
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
         {ui.view === 'board' && (
           <Board tasks={tasks} buckets={buckets} drag={drag} />
         )}

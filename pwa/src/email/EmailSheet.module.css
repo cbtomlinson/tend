@@ -133,3 +133,33 @@
   font: 600 13px var(--font-sans);
   cursor: pointer;
 }
+
+/* Backup & restore strip under the actions. */
+.backupRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-5);
+}
+.backupIcon {
+  flex: none;
+  color: var(--muted);
+}
+.backupText {
+  flex: 1;
+  font: 400 11px var(--font-sans);
+  color: var(--muted);
+  line-height: 1.35;
+}
+.backupBtn {
+  flex: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line-3);
+  background: #fff;
+  color: var(--text-3);
+  font: 600 11.5px var(--font-sans);
+  cursor: pointer;
+}

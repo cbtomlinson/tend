@@ -93,9 +93,15 @@ function emailProxy(cfg: EmailConfig): Plugin {
         req.on('data', (c) => chunks.push(c as Buffer));
         req.on('end', async () => {
           try {
-            const { subject, html, text, toKindle } = JSON.parse(
-              Buffer.concat(chunks).toString('utf8'),
-            ) as { subject: string; html: string; text: string; toKindle: boolean };
+            const { subject, html, text, toKindle, backupJson, backupFilename } =
+              JSON.parse(Buffer.concat(chunks).toString('utf8')) as {
+                subject: string;
+                html: string;
+                text: string;
+                toKindle: boolean;
+                backupJson?: string;
+                backupFilename?: string;
+              };
             const result = await sendBoardEmail({
               apiKey: cfg.apiKey,
               from: cfg.from,
@@ -105,6 +111,8 @@ function emailProxy(cfg: EmailConfig): Plugin {
               html,
               text,
               toKindle,
+              backupJson,
+              backupFilename,
             });
             res.setHeader('content-type', 'application/json');
             res.end(JSON.stringify(result));

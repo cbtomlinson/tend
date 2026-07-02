@@ -10,6 +10,13 @@ import { UIStateProvider } from './app/uiState';
 registerSW({ immediate: true });
 
 async function boot() {
+  // Ask the browser to protect this site's storage from automatic cleanup
+  // (iOS/Safari can otherwise evict IndexedDB without warning).
+  try {
+    void navigator.storage?.persist?.();
+  } catch {
+    /* older browsers */
+  }
   await ensureSeeded();
   createRoot(document.getElementById('root')!).render(
     <StrictMode>

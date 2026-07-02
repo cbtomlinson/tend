@@ -296,11 +296,6 @@ export async function definePerson(name: string, area: Area): Promise<void> {
   await db.people.put({ name: name.trim(), area });
 }
 
-/** Mark a name as a one-off: known (never re-asked), but no area hint. */
-export async function dismissPerson(name: string): Promise<void> {
-  await db.people.put({ name: name.trim(), area: null });
-}
-
 /* ------------------------------------------------------------------ */
 /* Capture commit                                                     */
 /* ------------------------------------------------------------------ */

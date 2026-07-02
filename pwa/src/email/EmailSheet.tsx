@@ -1,6 +1,13 @@
-import { useMemo, useState } from 'react';
-import { Mail } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
+import { DatabaseBackup, Mail } from 'lucide-react';
+import { db } from '@/data/db';
 import type { Bucket, Task } from '@/data/types';
+import {
+  backupFilename,
+  buildBackup,
+  parseBackup,
+  restoreBackup,
+} from '@/domain/backup';
 import {
   emailHtml,
   emailSubject,
@@ -56,6 +63,44 @@ export function EmailSheet({ tasks, buckets }: { tasks: Task[]; buckets: Bucket[
       /* clipboard may be blocked; ignore */
     }
     flash('Copied to clipboard');
+  };
+
+  // ---- Backup & restore (protection against the browser clearing storage) ----
+  const restoreInput = useRef<HTMLInputElement>(null);
+
+  const onBackupNow = async () => {
+    const backup = await buildBackup();
+    const res = await sendBoardEmail({
+      subject: `Tend backup - ${emailTitle('full').split(' - ')[1] ?? ''}`.trim(),
+      html: emailHtml(tasks, buckets, 'full'),
+      text: plain,
+      toKindle: false,
+      backupJson: JSON.stringify(backup),
+      backupFilename: backupFilename(),
+    });
+    if (res.ok) await db.meta.put({ key: 'lastBackupAt', value: Date.now() });
+    flash(res.ok ? 'Backup emailed — keep that message' : res.message);
+  };
+
+  const onRestoreFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const backup = parseBackup(await file.text());
+      const when = new Date(backup.exportedAt).toLocaleDateString();
+      if (
+        !window.confirm(
+          `Restore ${backup.tasks.length} tasks from the ${when} backup? Existing items with the same ids are overwritten; nothing else is deleted.`,
+        )
+      )
+        return;
+      const counts = await restoreBackup(backup);
+      closeOverlay();
+      flash(`Restored ${counts.tasks} tasks ✓`);
+    } catch {
+      flash("That file isn't a Tend backup");
+    }
   };
 
   return (
@@ -153,6 +198,30 @@ export function EmailSheet({ tasks, buckets }: { tasks: Task[]; buckets: Bucket[
         <button type="button" className={s.copy} onClick={onCopy}>
           Copy
         </button>
+      </div>
+
+      <div className={s.backupRow}>
+        <DatabaseBackup size={14} className={s.backupIcon} />
+        <span className={s.backupText}>
+          Backups email you a restore file every few days.
+        </span>
+        <button type="button" className={s.backupBtn} onClick={onBackupNow}>
+          Back up now
+        </button>
+        <button
+          type="button"
+          className={s.backupBtn}
+          onClick={() => restoreInput.current?.click()}
+        >
+          Restore
+        </button>
+        <input
+          ref={restoreInput}
+          type="file"
+          accept=".json,application/json"
+          hidden
+          onChange={onRestoreFile}
+        />
       </div>
     </BottomSheet>
   );

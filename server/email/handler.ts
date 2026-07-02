@@ -19,6 +19,9 @@ export interface SendArgs {
   text: string;
   /** Also deliver a Send-to-Kindle copy (as an HTML attachment Kindle converts). */
   toKindle?: boolean;
+  /** Optional JSON snapshot attached to the inbox email as a restore file. */
+  backupJson?: string;
+  backupFilename?: string;
 }
 
 export interface SendResult {
@@ -30,8 +33,19 @@ export async function sendBoardEmail(args: SendArgs): Promise<SendResult> {
   const { apiKey, from, to, kindleTo, subject, html, text, toKindle } = args;
   const resend = new Resend(apiKey);
 
+  // Optional board-backup attachment (a JSON restore file, ≤2 MB).
+  const attachments =
+    typeof args.backupJson === 'string' && args.backupJson.length < 2_000_000
+      ? [
+          {
+            filename: args.backupFilename || 'tend-backup.json',
+            content: Buffer.from(args.backupJson).toString('base64'),
+          },
+        ]
+      : undefined;
+
   // 1. The board, to your inbox.
-  const inbox = await resend.emails.send({ from, to, subject, html, text });
+  const inbox = await resend.emails.send({ from, to, subject, html, text, attachments });
   if (inbox.error) {
     return { ok: false, message: `Send failed: ${inbox.error.message}` };
   }
