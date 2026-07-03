@@ -8,19 +8,33 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## Ideas / Someday
 
-- **GitHub Actions auto-deploy.** Right now the site is built and pushed to the
-  `gh-pages` branch manually. A CI workflow would rebuild automatically on every
-  change to `main`. Blocked only by the `gh` token lacking the `workflow` scope —
-  a one-time GitHub settings tweak unlocks it. Low priority (manual deploy works).
 - **E-ink version.** Original long-term goal: phone-first now, a low-refresh
-  e-ink layout later. Future phase, not started.
+  e-ink layout later. Future phase, not started. NOTE: will likely need a
+  server-held copy of the board — that's the moment to revisit the tabled
+  "guaranteed 5 pm backup / server snapshot" idea (Chelsea tabled it 2026-07-02:
+  it weakens "data only on my phone" and isn't worth it until sync/e-ink needs it).
+- **Rate-limit persistence** (Supabase table instead of per-isolate memory),
+  **CSP header**, **task search**, **multi-device sync** — from the 2026-07-01
+  security review, all low priority.
 
 ## In progress
 
-- _(nothing right now)_
+- **GitHub Actions auto-deploy — one step from Chelsea.** The workflow file is
+  written (.github/workflows/deploy.yml, currently gitignored) and runs tests
+  before deploying. Blocked on the `gh` token lacking the `workflow` scope:
+  Chelsea runs `gh auth refresh -s workflow -h github.com` in Terminal, then
+  Claude pushes the workflow and flips the Pages source to "GitHub Actions".
 
 ## Done
 
+- 2026-07-02 — Review follow-ups: **"New version ready" update banner** (SW now
+  prompt-mode — updates apply when tapped, no more hard-refresh dance);
+  **Face ID app lock** (on-device passkey gates the app; password stays as
+  backup; enroll offer appears after next password login); **archive auto-clean
+  at 1 month** (archivedIso stamped; legacy "Jun 25" labels parsed
+  best-effort); **restore preview panel** (date + counts + first titles before
+  merging); **vitest suite — 37 tests** (dedupe, reconcile, dates, backup
+  validation, email formats, extraction sanitizers) wired into the CI workflow.
 - 2026-07-01 — **Full security + bug review.** Fixed: password gate now
   timing-safe with per-IP rate limiting (8 fails/10 min → 429); CORS locked to
   tend.littletomato.dev (was `*`); vision endpoint rejects missing/oversized
