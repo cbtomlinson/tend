@@ -19,14 +19,14 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## In progress
 
-- **GitHub Actions auto-deploy — one step from Chelsea.** The workflow file is
-  written (.github/workflows/deploy.yml, currently gitignored) and runs tests
-  before deploying. Blocked on the `gh` token lacking the `workflow` scope:
-  Chelsea runs `gh auth refresh -s workflow -h github.com` in Terminal, then
-  Claude pushes the workflow and flips the Pages source to "GitHub Actions".
+- _(nothing right now)_
 
 ## Done
 
+- 2026-07-03 — **GitHub Actions auto-deploy LIVE.** Every push to `main` now
+  builds, runs the 37-test suite, and deploys to Pages automatically (red tests
+  block the deploy). Pages build_type switched to "workflow"; the manual
+  build-and-push-to-gh-pages dance is retired (branch kept but unused).
 - 2026-07-02 — Review follow-ups: **"New version ready" update banner** (SW now
   prompt-mode — updates apply when tapped, no more hard-refresh dance);
   **Face ID app lock** (on-device passkey gates the app; password stays as
