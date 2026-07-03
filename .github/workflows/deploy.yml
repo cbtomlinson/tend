@@ -1,0 +1,51 @@
+name: Deploy Tend to GitHub Pages
+
+# Tend is a Vite app (has a build step), so we build it here and publish the
+# output. Tests gate the deploy: a red suite never ships.
+# Secrets (Anthropic / Resend / people) are NOT here — they live in Supabase;
+# the API base URL is public build-time config.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run tests
+        run: npm --workspace pwa run test
+      - name: Build the PWA
+        run: npm --workspace pwa run build
+        env:
+          VITE_API_BASE: https://phbwrolphwdmjynyttmo.supabase.co/functions/v1
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: pwa/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
