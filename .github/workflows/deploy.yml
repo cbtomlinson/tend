@@ -45,7 +45,12 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # GitHub's Pages deploy API flakes intermittently ("try again later"),
+      # so one automatic retry before we call it a failure.
       - id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - name: Retry deploy (Pages API flake)
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
