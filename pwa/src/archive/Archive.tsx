@@ -11,7 +11,9 @@ export function Archive() {
   return (
     <div className={s.wrap}>
       <div className={s.title}>Archive</div>
-      <div className={s.sub}>Completed tasks, kept for history.</div>
+      <div className={s.sub}>
+        Completed tasks, kept for one month (backups keep them forever).
+      </div>
       {items.length === 0 && (
         <div className={s.emptyState}>Nothing archived yet.</div>
       )}

@@ -37,6 +37,14 @@ export function App() {
   const ui = useUI();
   const drag = useDrag(ui.groupBy);
   const [dataMissing, setDataMissing] = useState(false);
+  const [updateReady, setUpdateReady] = useState(false);
+
+  // "New version ready" banner — set by the service worker (see main.tsx).
+  useEffect(() => {
+    const onNeedRefresh = () => setUpdateReady(true);
+    window.addEventListener('tend:need-refresh', onNeedRefresh);
+    return () => window.removeEventListener('tend:need-refresh', onNeedRefresh);
+  }, []);
 
   // Data-loss detector: remember (outside IndexedDB) that tasks existed; if the
   // DB later comes up empty, say so loudly instead of showing a silent fresh board.
@@ -156,6 +164,22 @@ export function App() {
 
       {/* MAIN */}
       <div className={s.main}>
+        {updateReady && (
+          <div className={s.updateBar}>
+            <span className={s.updateText}>A new version of Tend is ready.</span>
+            <button
+              type="button"
+              className={s.updateBtn}
+              onClick={() =>
+                (
+                  window as unknown as { __tendApplyUpdate?: () => void }
+                ).__tendApplyUpdate?.()
+              }
+            >
+              Update
+            </button>
+          </div>
+        )}
         {dataMissing && (
           <div className={s.dataWarn}>
             <AlertTriangle size={16} className={s.dataWarnIcon} />

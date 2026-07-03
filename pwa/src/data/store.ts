@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from './db';
 import { SEED_BUCKETS, SEED_NEXT_ID, SEED_TASKS } from './seed';
 import type { Area, Bucket, Person, Source, Task } from './types';
-import { isoToday, today } from '@/domain/dates';
+import { daysSince, isoToday, shortToIso, today } from '@/domain/dates';
 import { AREA_PALETTE_SIZE, DEFAULT_AREAS } from '@/domain/areas';
 import { winningSource } from '@/domain/sources';
 
@@ -68,6 +68,17 @@ export async function ensureSeeded(): Promise<void> {
     if (t.status === 'active' && !t.waitingSince) {
       await db.tasks.update(t.id, { waitingSince: isoToday() });
     }
+  }
+
+  // Archive housekeeping: completed tasks are kept for one month, then removed
+  // (they live on in the daily backup emails). Legacy rows without an ISO
+  // stamp are dated from their "Jun 25" label, assuming the most recent past.
+  const ARCHIVE_KEEP_DAYS = 31;
+  const archived = await db.tasks.where('status').equals('archived').toArray();
+  for (const t of archived) {
+    const iso = t.archivedIso || shortToIso(t.archivedAt);
+    if (!t.archivedIso && iso) await db.tasks.update(t.id, { archivedIso: iso });
+    if (iso && daysSince(iso) > ARCHIVE_KEEP_DAYS) await db.tasks.delete(t.id);
   }
 }
 
@@ -144,11 +155,15 @@ export async function setTaskBucket(id: Task['id'], bucket: string): Promise<voi
 }
 
 export async function completeTask(id: Task['id']): Promise<void> {
-  await db.tasks.update(id, { status: 'archived', archivedAt: today() });
+  await db.tasks.update(id, {
+    status: 'archived',
+    archivedAt: today(),
+    archivedIso: isoToday(),
+  });
 }
 
 export async function restoreTask(id: Task['id']): Promise<void> {
-  await db.tasks.update(id, { status: 'active', archivedAt: '' });
+  await db.tasks.update(id, { status: 'active', archivedAt: '', archivedIso: '' });
 }
 
 export async function deleteTask(id: Task['id']): Promise<void> {
@@ -417,7 +432,11 @@ export async function commitCapture(rec: Reconcile): Promise<CommitSummary> {
     for (const g of rec.gone) {
       if (g.choice === 'done') {
         summary.archived++;
-        await db.tasks.update(g.id, { status: 'archived', archivedAt: today() });
+        await db.tasks.update(g.id, {
+          status: 'archived',
+          archivedAt: today(),
+          archivedIso: isoToday(),
+        });
       }
     }
   });

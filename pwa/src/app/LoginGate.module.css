@@ -47,6 +47,19 @@
   color: #fff;
   font: 600 15px var(--font-sans);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Quiet text link under the main button (e.g. "Use password instead"). */
+.linkBtn {
+  margin-top: 12px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font: 500 12.5px var(--font-sans);
+  cursor: pointer;
+  text-decoration: underline;
 }
 .error {
   font: 500 12.5px var(--font-sans);

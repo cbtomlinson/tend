@@ -120,6 +120,33 @@
   margin-top: 7px;
 }
 
+/* "New version ready" banner. */
+.updateBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 14px 0;
+  padding: 9px 12px;
+  background: #eef3fb;
+  border: 1px solid #cfdef1;
+  border-radius: 10px;
+}
+.updateText {
+  flex: 1;
+  font: 500 12.5px var(--font-sans);
+  color: var(--accent);
+}
+.updateBtn {
+  flex: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font: 700 12px var(--font-sans);
+  cursor: pointer;
+}
+
 /* Loud "your data is gone" banner — never silent about data loss. */
 .dataWarn {
   display: flex;

@@ -32,6 +32,22 @@ export function isoToday(): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
+/**
+ * Best-effort parse of a legacy "Jun 25" label into an ISO date. Assumes the
+ * most recent past occurrence (a "future" parse means it was last year).
+ */
+export function shortToIso(label: string): string {
+  const m = label.match(/^([A-Z][a-z]{2}) (\d{1,2})$/);
+  if (!m) return '';
+  const month = MONTHS.indexOf(m[1]);
+  if (month < 0) return '';
+  const now = new Date();
+  const d = new Date(now.getFullYear(), month, Number(m[2]));
+  if (d.getTime() > now.getTime()) d.setFullYear(d.getFullYear() - 1);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
 /** Whole days elapsed since an ISO date ('' or invalid -> 0). */
 export function daysSince(iso: string | undefined): number {
   if (!iso) return 0;

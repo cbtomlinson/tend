@@ -158,7 +158,9 @@ export default defineConfig(({ mode }) => {
       visionProxy(apiKey, visionModel, peopleJson),
       emailProxy(email),
       VitePWA({
-        registerType: 'autoUpdate',
+        // 'prompt': new versions wait for the in-app "Update" banner instead of
+        // silently applying on some future launch.
+        registerType: 'prompt',
         includeAssets: ['favicon.svg'],
         manifest: {
           name: 'Tend',

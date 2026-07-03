@@ -7,7 +7,16 @@ import { Root } from './app/Root';
 import { UIStateProvider } from './app/uiState';
 
 // Service worker: caches app shell only — never task/PHI data.
-registerSW({ immediate: true });
+// When a new version is waiting, App shows an "Update" banner that calls
+// window.__tendApplyUpdate to activate it and reload.
+const applyUpdate = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    window.dispatchEvent(new Event('tend:need-refresh'));
+  },
+});
+(window as unknown as { __tendApplyUpdate?: () => void }).__tendApplyUpdate =
+  () => void applyUpdate(true);
 
 async function boot() {
   // Ask the browser to protect this site's storage from automatic cleanup

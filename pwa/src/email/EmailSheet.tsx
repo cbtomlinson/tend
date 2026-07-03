@@ -7,6 +7,7 @@ import {
   buildBackup,
   parseBackup,
   restoreBackup,
+  type Backup,
 } from '@/domain/backup';
 import {
   brandDate,
@@ -68,6 +69,7 @@ export function EmailSheet({ tasks, buckets }: { tasks: Task[]; buckets: Bucket[
 
   // ---- Backup & restore (protection against the browser clearing storage) ----
   const restoreInput = useRef<HTMLInputElement>(null);
+  const [pendingRestore, setPendingRestore] = useState<Backup | null>(null);
 
   const onBackupNow = async () => {
     const backup = await buildBackup();
@@ -88,20 +90,18 @@ export function EmailSheet({ tasks, buckets }: { tasks: Task[]; buckets: Bucket[
     e.target.value = '';
     if (!file) return;
     try {
-      const backup = parseBackup(await file.text());
-      const when = new Date(backup.exportedAt).toLocaleDateString();
-      if (
-        !window.confirm(
-          `Restore ${backup.tasks.length} tasks from the ${when} backup? Existing items with the same ids are overwritten; nothing else is deleted.`,
-        )
-      )
-        return;
-      const counts = await restoreBackup(backup);
-      closeOverlay();
-      flash(`Restored ${counts.tasks} tasks ✓`);
+      setPendingRestore(parseBackup(await file.text()));
     } catch {
       flash("That file isn't a Tend backup");
     }
+  };
+
+  const onConfirmRestore = async () => {
+    if (!pendingRestore) return;
+    const counts = await restoreBackup(pendingRestore);
+    setPendingRestore(null);
+    closeOverlay();
+    flash(`Restored ${counts.tasks} tasks ✓`);
   };
 
   return (
@@ -200,6 +200,52 @@ export function EmailSheet({ tasks, buckets }: { tasks: Task[]; buckets: Bucket[
           Copy
         </button>
       </div>
+
+      {pendingRestore && (
+        <div className={s.restorePanel}>
+          <div className={s.restoreHead}>
+            Backup from{' '}
+            {new Date(pendingRestore.exportedAt).toLocaleDateString(undefined, {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </div>
+          <div className={s.restoreCounts}>
+            {pendingRestore.tasks.length} tasks · {pendingRestore.buckets.length}{' '}
+            buckets · {pendingRestore.areas.length} areas ·{' '}
+            {pendingRestore.people.length} people
+          </div>
+          <ul className={s.restoreList}>
+            {pendingRestore.tasks.slice(0, 5).map((t) => (
+              <li key={String(t.id)}>{t.title}</li>
+            ))}
+            {pendingRestore.tasks.length > 5 && (
+              <li>…and {pendingRestore.tasks.length - 5} more</li>
+            )}
+          </ul>
+          <div className={s.restoreNote}>
+            Merges over the current board — same ids are overwritten, nothing
+            else is deleted.
+          </div>
+          <div className={s.restoreActions}>
+            <button
+              type="button"
+              className={s.restoreGo}
+              onClick={onConfirmRestore}
+            >
+              Restore
+            </button>
+            <button
+              type="button"
+              className={s.restoreCancel}
+              onClick={() => setPendingRestore(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className={s.backupRow}>
         <DatabaseBackup size={14} className={s.backupIcon} />

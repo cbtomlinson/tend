@@ -62,8 +62,10 @@ export interface Task {
   /** Age / added marker, e.g. "5d" or "now". */
   added: string;
   status: TaskStatus;
-  /** Date completed, e.g. "Jun 25". */
+  /** Date completed, e.g. "Jun 25" (display label). */
   archivedAt: string;
+  /** Date completed as ISO YYYY-MM-DD — drives the 1-month archive cleanup. */
+  archivedIso?: string;
   /** Stable ordering within a group (board sort key). */
   order: number;
 }
