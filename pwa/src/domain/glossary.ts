@@ -36,13 +36,18 @@ export const TOKEN_SYNONYMS: Readonly<Record<string, string>> = {
   slg: 'supportlog',
   ge: 'gpu',
   geripsych: 'gpu',
+  op: 'outpatient',
+  ip: 'inpatient',
 };
 
 /**
  * Filler verbs + stopwords dropped before comparison.
  * "build/update/fix/the/…" per the README, plus common glue.
+ * 'rehab' is here because in this user's world EVERYTHING is rehab — it's an
+ * organizational prefix ("Rehab: X" ≡ "X"), not a distinguishing word.
  */
 export const STOPWORDS: ReadonlySet<string> = new Set([
+  'rehab',
   'build',
   'update',
   'updates',

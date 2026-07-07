@@ -107,13 +107,14 @@ export function classify(
   // Shared hard anchor => strict match regardless of wording.
   if (sharedAnchor) return { verdict: 'auto-merge', overlap: 1, reason: 'anchor' };
 
-  // Strictness against the board is enforced HERE: silent auto-merge requires
-  // a normalized-exact token set AND the same area. A fresh task can never fold
-  // silently into an unrelated existing one. (`vsBoard` reserved for future
-  // tuning; the asymmetry is handled by keeping auto-merge strict, not by
-  // suppressing the safe "ask".)
+  // Normalized-exact wording => the same task, even when the AREA guesses
+  // disagree (the scan's area is a guess; identical words are overwhelming
+  // evidence — asking about literal duplicates was pure noise in practice).
+  // Anything less than exact still never merges silently. (`vsBoard` reserved
+  // for future tuning; the asymmetry is handled by keeping auto-merge strict,
+  // not by suppressing the safe "ask".)
   void vsBoard;
-  if (sameArea && sameTokenSet(ct, et) && ct.length > 0) {
+  if (sameTokenSet(ct, et) && ct.length > 0) {
     return { verdict: 'auto-merge', overlap: 1, reason: 'exact' };
   }
 

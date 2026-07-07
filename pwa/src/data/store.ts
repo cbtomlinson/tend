@@ -338,6 +338,8 @@ export interface ReconcileDup {
   matchId: Task['id'] | null;
   matchTitle: string;
   area: Task['area'];
+  /** The BOARD task's area — may differ from the scan's guess. */
+  matchArea: Task['area'];
   overlap: string;
   choice: 'keep' | 'merge';
   sources: Source[];

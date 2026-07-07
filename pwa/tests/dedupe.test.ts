@@ -40,12 +40,59 @@ describe('classify', () => {
     expect(r.reason).toBe('exact');
   });
 
-  it('never auto-merges same wording across different areas', () => {
+  it('auto-merges identical wording even when the area guesses differ', () => {
+    // Chelsea 2026-07-03: literal duplicates were asking just because the
+    // scan's area guess disagreed with the board — pure noise.
     const r = classify(
-      { title: 'Update eval template', area: 'OP Rehab' },
-      { title: 'Update eval template', area: 'IRF' },
+      {
+        title: 'Enable 2FA for Rover on SGMC Public but skip on SGMC Data',
+        area: 'Rover',
+      },
+      {
+        title: 'Enable 2FA for Rover on SGMC Public but skip on SGMC Data',
+        area: 'ClinDoc',
+      },
+    );
+    expect(r.verdict).toBe('auto-merge');
+    expect(r.reason).toBe('exact');
+  });
+
+  it('still never auto-merges PARTIAL overlap across different areas', () => {
+    const r = classify(
+      { title: 'Eval template cleanup for clinics', area: 'OP Rehab' },
+      { title: 'Eval template rebuild', area: 'IRF' },
     );
     expect(r.verdict).not.toBe('auto-merge');
+  });
+
+  it('treats OP and outpatient as the same word', () => {
+    const r = classify(
+      { title: 'RH - Intake form built into MyChart - SGA outpatient', area: 'OP Rehab' },
+      { title: 'RH - Intake form built into MyChart - SGA OP', area: 'OP Rehab' },
+    );
+    expect(r.verdict).toBe('auto-merge');
+  });
+
+  it('ignores a "Rehab:" organizational prefix', () => {
+    const r = classify(
+      {
+        title: 'AMB Referrals to OT, PT, and SLP are not on Office Staff Preference List',
+        area: 'OP Rehab',
+      },
+      {
+        title: 'Rehab: AMB Referrals to OT, PT, and SLP are not on Office Staff Preference List',
+        area: 'OP Rehab',
+      },
+    );
+    expect(r.verdict).toBe('auto-merge');
+  });
+
+  it('combines the rehab + OP rules ("Rehab: OP…" ≡ "Outpatient…")', () => {
+    const r = classify(
+      { title: 'Outpatient therapy manager report issues', area: 'OP Rehab' },
+      { title: 'Rehab: OP therapy manager report issues', area: 'OP Rehab' },
+    );
+    expect(r.verdict).toBe('auto-merge');
   });
 
   it('asks on partial same-area overlap', () => {

@@ -87,6 +87,7 @@ export function buildReconcile(
         matchId: ask.id,
         matchTitle: ask.title,
         area: cand.area,
+        matchArea: ask.area,
         overlap: overlapLabel(askOverlap),
         choice: 'keep',
         sources: cand.sources,

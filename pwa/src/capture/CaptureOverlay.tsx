@@ -381,7 +381,16 @@ export function CaptureOverlay() {
                 </div>
                 <div className={s.dupBody}>
                   <div className={s.dupAsk}>
-                    Same area (<b>{d.area}</b>). Is this the same task?
+                    {d.area === d.matchArea ? (
+                      <>
+                        Same area (<b>{d.area}</b>). Is this the same task?
+                      </>
+                    ) : (
+                      <>
+                        Areas differ — scan guessed <b>{d.area}</b>, board says{' '}
+                        <b>{d.matchArea}</b>. Same task?
+                      </>
+                    )}
                   </div>
                   <div className={s.dupTitles}>
                     <div className={s.dupLine}>• New: “{d.newTitle}”</div>
