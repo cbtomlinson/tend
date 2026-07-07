@@ -23,6 +23,14 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## Done
 
+- 2026-07-04 — **Supabase pause-warning neutralized.** Free-tier inactivity
+  detector only counts DB/API-gateway traffic — Edge Function calls don't
+  register, so the active app looked "inactive." Fix: `keepalive.yml` GitHub
+  Action pings auth health + vision {ping} daily at 13:00 UTC (secrets:
+  SUPABASE_ANON_KEY, TEND_APP_PASSWORD). No Pro plan needed. Escape hatch if
+  policy tightens: port the two functions to Deno Deploy (free, no pausing).
+  NOTE: a second Supabase project "the-nightstand" exists — the warning email
+  may have been about it; unprotected by this ping.
 - 2026-07-03 — **GitHub Actions auto-deploy LIVE.** Every push to `main` now
   builds, runs the 37-test suite, and deploys to Pages automatically (red tests
   block the deploy). Pages build_type switched to "workflow"; the manual
