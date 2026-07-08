@@ -23,6 +23,16 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## Done
 
+- 2026-07-08 — Field feedback round 2: **people roster fixed** (full names —
+  first-name-only entries were why "Isabelle Roethle"/"Sushmita Barua" got
+  flagged; Chelsea herself added as known/no-area so scans never ask about
+  her; Isabelle encoded multi-area ClinDoc/IRF/Rover; prompt now says fuller
+  names starting with a known first name are the same person). **OP/IP stay
+  shorthand in extracted titles** (removed from expansion list; comparison
+  still treats OP≡outpatient internally). **Plural-blind matching**
+  ("Providers"≡"Provider" — the 91% near-dupes now auto-merge). **Stale
+  waiting tasks float to the top of Waiting On** (longest wait first).
+  47 tests.
 - 2026-07-04 — **Supabase pause-warning neutralized.** Free-tier inactivity
   detector only counts DB/API-gateway traffic — Edge Function calls don't
   register, so the active app looked "inactive." Fix: `keepalive.yml` GitHub
