@@ -76,15 +76,13 @@ export const ABBREVIATIONS: { short: string; long: string }[] = [
   { short: 'dx', long: 'diagnosis' },
   { short: 'hx', long: 'history' },
   { short: 'd/c', long: 'discharge (or discontinue, by context)' },
-  { short: 'IP', long: 'inpatient' },
-  { short: 'OP', long: 'outpatient' },
   { short: 'OS', long: 'order set' },
   { short: 'SP', long: 'smartphrase' },
 ];
 
 /** Proper terms/acronyms to KEEP as-is (do not expand). */
 export const KEEP_AS_IS = [
-  'OT', 'PT', 'ST', 'SLP', 'eval', 'treat',
+  'OT', 'PT', 'ST', 'SLP', 'eval', 'treat', 'OP', 'IP',
   'IRF-PAI', 'SLG', 'GG', 'FIM', 'Rover', 'GPU', 'ARU', 'IRU', 'IRF',
 ];
 
@@ -208,7 +206,7 @@ ${knowledgePrompt(people)}
 
 PHI CHECK — the user must never photograph patient information. If the image appears to contain patient-identifying info (patient names in a clinical context, MRNs, DOBs, room/bed numbers, account numbers), set phiSuspected true with a short GENERIC phiReason (never repeat the identifier). Known people and obvious coworkers are NOT PHI.
 
-NEW NAMES — list in unknownPeople any person named in a task who is NOT in the KNOWN PEOPLE list and does not appear to be a patient, so the user can teach the scanner who they are. Use the name exactly as written.
+NEW NAMES — list in unknownPeople any person named in a task who is NOT in the KNOWN PEOPLE list and does not appear to be a patient, so the user can teach the scanner who they are. Use the name exactly as written. A KNOWN PEOPLE entry may be a first name only — a fuller name that starts with that first name is the SAME person, already known: never flag it.
 
 Record your answer by calling the record_extraction tool. If the image is unreadable or has no tasks, return an empty items array.`;
 }

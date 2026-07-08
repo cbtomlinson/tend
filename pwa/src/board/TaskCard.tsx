@@ -1,16 +1,8 @@
 import { Check, Circle, GripVertical } from 'lucide-react';
 import type { Task } from '@/data/types';
-import { WAIT_REMIND_DEFAULT } from '@/data/store';
-import { daysSince } from '@/domain/dates';
+import { staleDays } from '@/domain/waiting';
 import { AreaTag, DueChip, PriorityMark, SourceTag, Waiting } from '@/components/tags';
 import s from './TaskCard.module.css';
-
-/** Days a task has sat in Waiting On past its threshold (0 = not stale). */
-function staleDays(task: Task): number {
-  if (task.bucket !== 'waiting' || !task.waitingSince) return 0;
-  const days = daysSince(task.waitingSince);
-  return days >= (task.waitRemindDays ?? WAIT_REMIND_DEFAULT) ? days : 0;
-}
 
 interface Props {
   task: Task;

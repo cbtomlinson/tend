@@ -10,6 +10,7 @@ import {
   restoreTask,
 } from '@/data/store';
 import { useUI, type AreaFilter } from '@/app/uiState';
+import { waitingOrder } from '@/domain/waiting';
 import type { DragApi } from './useDrag';
 import { TaskCard } from './TaskCard';
 import s from './Board.module.css';
@@ -57,7 +58,11 @@ export function Board({ tasks, buckets, drag }: Props) {
     return buckets.map((b) => ({
       id: b.id,
       name: b.name,
-      tasks: shown.filter((t) => t.bucket === b.id),
+      // Waiting On floats its flagged (waited-too-long) tasks to the top.
+      tasks:
+        b.id === 'waiting'
+          ? waitingOrder(shown.filter((t) => t.bucket === b.id))
+          : shown.filter((t) => t.bucket === b.id),
       fixed: !!b.fixed,
     }));
   }, [groupBy, filterArea, shown, buckets, areas]);

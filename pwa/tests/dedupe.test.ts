@@ -87,6 +87,23 @@ describe('classify', () => {
     expect(r.verdict).toBe('auto-merge');
   });
 
+  it('treats singular/plural drift as the same wording', () => {
+    // Chelsea 2026-07-08: "Providers SER" vs "Provider SER" scored 91% and asked.
+    const r = classify(
+      {
+        title:
+          'Rehab: Find OP Plans of Care that need signatures — report shows that POC went to physician via inbasket but Provider SER shows fax as preferred method',
+        area: 'OP Rehab',
+      },
+      {
+        title:
+          'Rehab: Find OP Plans of Care that need signatures report shows that POC went to physician via inbasket but Providers SER shows fax as preferred method',
+        area: 'OP Rehab',
+      },
+    );
+    expect(r.verdict).toBe('auto-merge');
+  });
+
   it('combines the rehab + OP rules ("Rehab: OP…" ≡ "Outpatient…")', () => {
     const r = classify(
       { title: 'Outpatient therapy manager report issues', area: 'OP Rehab' },

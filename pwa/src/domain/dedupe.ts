@@ -36,6 +36,17 @@ export interface DedupeResult {
   reason: 'exact' | 'anchor' | 'overlap' | 'cross-area' | 'weak';
 }
 
+/**
+ * Crude singular-izer: "providers" ≡ "provider", "signatures" ≡ "signature".
+ * Only trailing 's' on longer words (never 'ss'), and both sides get the same
+ * treatment — it exists purely so plural/singular drift can't block a match.
+ */
+function singular(t: string): string {
+  return t.length > 3 && t.endsWith('s') && !t.endsWith('ss')
+    ? t.slice(0, -1)
+    : t;
+}
+
 /** Normalize a title to a comparable, glossary-expanded token set. */
 export function normalize(title: string): string[] {
   let s = title.toLowerCase();
@@ -48,7 +59,8 @@ export function normalize(title: string): string[] {
     .split(/\s+/)
     .filter(Boolean)
     .map((t) => TOKEN_SYNONYMS[t] ?? t)
-    .filter((t) => !STOPWORDS.has(t));
+    .filter((t) => !STOPWORDS.has(t))
+    .map(singular);
   // Dedupe tokens — order doesn't matter for set comparison.
   return Array.from(new Set(tokens));
 }
