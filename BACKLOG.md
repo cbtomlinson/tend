@@ -23,6 +23,9 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## Done
 
+- 2026-07-11 — **Capture-recency indicator** on the capture screen: "Last
+  capture: 2 days ago · Jul 9" plus a per-list line (SLG 2d · Zoho — · …).
+  Stamped on every capture commit (meta lastCaptureAt + lastCapture:<source>).
 - 2026-07-08 — Field feedback round 2: **people roster fixed** (full names —
   first-name-only entries were why "Isabelle Roethle"/"Sushmita Barua" got
   flagged; Chelsea herself added as known/no-area so scans never ask about
