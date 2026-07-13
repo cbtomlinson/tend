@@ -461,3 +461,34 @@
   cursor: pointer;
   width: 100%;
 }
+
+/* "Last capture: 2 days ago" indicator on the shoot screen. */
+.lastCapture {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 10px 0 2px;
+  text-align: center;
+}
+.lastCaptureMain {
+  font: 400 12px var(--font-sans);
+  color: var(--text-3);
+}
+.lastCaptureMain b {
+  font-weight: 700;
+  color: var(--ink);
+}
+.lastCaptureBySrc {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.lastCaptureSrc {
+  font: 400 10.5px var(--font-sans);
+  color: var(--muted);
+}
+.lastCaptureSrc b {
+  font-weight: 600;
+  color: var(--text-3);
+}

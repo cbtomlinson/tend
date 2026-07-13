@@ -4,12 +4,14 @@ import {
   commitCapture,
   definePerson,
   useActiveTasks,
+  useLastCaptures,
   usePeople,
 } from '@/data/store';
 import { buildReconcile } from '@/domain/reconcile';
 import { extractTasks } from '@/services/vision';
 import { areaBgVar, areaTextVar, nextArea, useAreas } from '@/domain/areas';
-import { shortSource } from '@/domain/sources';
+import { agoLabel, fmtShort } from '@/domain/dates';
+import { ALL_SOURCES, shortSource } from '@/domain/sources';
 import { SourceTag } from '@/components/tags';
 import { useUI } from '@/app/uiState';
 import s from './CaptureOverlay.module.css';
@@ -18,6 +20,7 @@ export function CaptureOverlay() {
   const board = useActiveTasks();
   const areas = useAreas();
   const people = usePeople();
+  const lastCaptures = useLastCaptures();
   const areaNames = useMemo(() => areas.map((a) => a.name), [areas]);
   const {
     captureStep,
@@ -189,6 +192,31 @@ export function CaptureOverlay() {
               <div className={s.phiText}>
                 Scanned in memory — the photo is never saved.
               </div>
+            </div>
+            <div className={s.lastCapture}>
+              {lastCaptures.at == null ? (
+                <span className={s.lastCaptureMain}>
+                  No captures yet — this will be your first.
+                </span>
+              ) : (
+                <>
+                  <span className={s.lastCaptureMain}>
+                    Last capture: <b>{agoLabel(lastCaptures.at)}</b> ·{' '}
+                    {fmtShort(new Date(lastCaptures.at))}
+                  </span>
+                  <span className={s.lastCaptureBySrc}>
+                    {ALL_SOURCES.map((src) => {
+                      const t = lastCaptures.bySource[src];
+                      return (
+                        <span key={src} className={s.lastCaptureSrc}>
+                          {shortSource(src)}{' '}
+                          <b>{t ? agoLabel(t).replace(' days ago', 'd') : '—'}</b>
+                        </span>
+                      );
+                    })}
+                  </span>
+                </>
+              )}
             </div>
             <div className={s.viewport}>
               <div className={s.guides} />

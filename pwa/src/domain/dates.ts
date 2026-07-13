@@ -48,6 +48,18 @@ export function shortToIso(label: string): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
+/** "today" / "yesterday" / "N days ago" for an epoch-ms timestamp. */
+export function agoLabel(ms: number): string {
+  const then = new Date(ms);
+  then.setHours(0, 0, 0, 0);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const days = Math.max(0, Math.round((now.getTime() - then.getTime()) / 86400000));
+  if (days === 0) return 'today';
+  if (days === 1) return 'yesterday';
+  return `${days} days ago`;
+}
+
 /** Whole days elapsed since an ISO date ('' or invalid -> 0). */
 export function daysSince(iso: string | undefined): number {
   if (!iso) return 0;

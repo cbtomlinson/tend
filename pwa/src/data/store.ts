@@ -441,7 +441,33 @@ export async function commitCapture(rec: Reconcile): Promise<CommitSummary> {
         });
       }
     }
+
+    // Stamp when each captured list was last scanned (drives the
+    // "last capture" indicator on the capture screen).
+    const now = Date.now();
+    await db.meta.put({ key: 'lastCaptureAt', value: now });
+    for (const src of rec.sources) {
+      await db.meta.put({ key: `lastCapture:${src}`, value: now });
+    }
   });
 
   return summary;
+}
+
+/** Live read of capture recency: overall + per source list. */
+export function useLastCaptures(): {
+  at: number | null;
+  bySource: Record<string, number>;
+} {
+  const rows =
+    useLiveQuery(() => db.meta.toArray(), [], [] as { key: string; value: number }[]) ??
+    [];
+  const at = rows.find((r) => r.key === 'lastCaptureAt')?.value ?? null;
+  const bySource: Record<string, number> = {};
+  for (const r of rows) {
+    if (r.key.startsWith('lastCapture:')) {
+      bySource[r.key.slice('lastCapture:'.length)] = r.value;
+    }
+  }
+  return { at, bySource };
 }

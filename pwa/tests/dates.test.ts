@@ -1,6 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { daysSince, dueInDays, fmtShort, isoToday, shortToIso } from '@/domain/dates';
+import {
+  agoLabel,
+  daysSince,
+  dueInDays,
+  fmtShort,
+  isoToday,
+  shortToIso,
+} from '@/domain/dates';
 import { isoDaysAgo } from './fixtures';
+
+describe('agoLabel', () => {
+  it('labels today / yesterday / N days ago', () => {
+    expect(agoLabel(Date.now())).toBe('today');
+    expect(agoLabel(Date.now() - 1 * 86400000)).toBe('yesterday');
+    expect(agoLabel(Date.now() - 5 * 86400000)).toBe('5 days ago');
+  });
+});
 
 describe('isoToday', () => {
   it('is YYYY-MM-DD and round-trips through daysSince as 0', () => {
