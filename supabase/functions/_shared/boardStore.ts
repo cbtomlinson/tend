@@ -95,14 +95,15 @@ export async function saveBoardRow(
   return updated_at;
 }
 
-/** The display's #1 task: highest priority first, due-dated first within it. */
+/**
+ * What the display's green button completes: the FIRST task in the
+ * Today's Priorities bucket, in the user's own board order (Chelsea,
+ * 2026-07-18). If that bucket is empty, the button is a no-op — it never
+ * reaches into other buckets.
+ */
 export function topTask(snapshot: Snapshot): SnapTask | null {
-  const rank: Record<string, number> = { High: 3, Med: 2, Low: 1 };
-  const active = (snapshot.tasks ?? []).filter((t) => t.status === 'active');
-  active.sort(
-    (a, b) =>
-      (rank[b.prio ?? ''] ?? 0) - (rank[a.prio ?? ''] ?? 0) ||
-      (b.due ? 1 : 0) - (a.due ? 1 : 0),
-  );
-  return active[0] ?? null;
+  const today = (snapshot.tasks ?? [])
+    .filter((t) => t.status === 'active' && t.bucket === 'today')
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  return today[0] ?? null;
 }

@@ -102,7 +102,7 @@ function header(bm: Bitmap, sub: string): void {
 
 function footer(bm: Bitmap): void {
   bm.hline(MARGIN, FOOTER_RULE_Y, W - 2 * MARGIN, 1);
-  const labels = ['A · CYCLE VIEW', 'B · REFRESH', 'C · DONE #1'];
+  const labels = ['A · CYCLE VIEW', 'B · REFRESH', 'C · DONE #1 TODAY'];
   const third = (W - 2 * MARGIN) / 3;
   labels.forEach((label, i) => {
     const cx = MARGIN + third * i + third / 2;
