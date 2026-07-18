@@ -30,9 +30,13 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
     GET ?view=A|B&format=raw (48,000-byte framebuffer, MSB-first, 1=black) or
     format=bmp (browser preview). Hand-built 5×7 bitmap font + 1-bit
     rasterizer; both views visually verified against the design.
-  - ⏭ Stage 3: firmware (`firmware/`) — ESP32-S3: wake → fetch raw → display →
-    deep-sleep 15 min; buttons A=view, B=refresh, C=completeTop. Flash via USB
-    (needs Chelsea + device + her Wi-Fi credentials).
+  - ✅ Stage 3 (2026-07-18): firmware FLASHED AND RUNNING on the reTerminal.
+    First boot verified over serial: Wi-Fi up, 48,000-byte frame fetched,
+    painted, deep-sleeping on a 15-min timer. Buttons: left=cycle view,
+    middle=refresh, green=done-#1 (chirps on success). Battery 4.15V at flash
+    time. PlatformIO project in `firmware/` (config.h gitignored — holds Wi-Fi
+    + app password); flash: `pio run -t upload`. Serial-monitor gotcha: open
+    the port with DTR/RTS de-asserted or the chip latches into bootloader.
 
 ## Done
 
