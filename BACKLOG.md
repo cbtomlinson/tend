@@ -40,6 +40,11 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## Done
 
+- 2026-07-18 — Display field-feedback round 1: **archive sorts by completion
+  recency** (newest first); **display lists follow phone board order** (was
+  internal-id order); **View A main list = Today's Priorities** (was Actively
+  Working; Active count added to the summary column). Top-3 logic documented:
+  priority level, then has-due-date, then board order.
 - 2026-07-17 — **Board search**: 🔍 chip at the start of the filter row expands
   a search bar; every query word must match across title/note/waiting/ref;
   live match count; empty groups hidden while searching. 54 tests.
