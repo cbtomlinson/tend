@@ -19,13 +19,17 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## In progress
 
-- **E-ink display (reTerminal E1001).** Spec: 7.5" 800×480 1-bit panel,
-  ESP32-S3, Wi-Fi, battery + deep-sleep, 3 buttons (A=cycle view, B=refresh,
-  C=mark top task done). Device pulls a server-rendered 1-bit image on a
-  cadence. Render source = the existing Display-tab views (domain/eink.ts).
-  Requires the server-held board copy (Chelsea consented in principle by
-  green-lighting this phase — confirm details). Awaiting hardware/cadence
-  decisions; then: board push/pull endpoints → render endpoint → firmware.
+- **E-ink display (reTerminal E1001).** Decisions locked 2026-07-17: hardware
+  in hand; FULL spec (incl. button-C write-back); 15-min refresh cadence;
+  server board copy consented.
+  - ✅ Stage 1 (2026-07-18): server copy live — `board` table (RLS, service-key
+    only) + `board` Edge Function (GET snapshot / POST push / completeTop),
+    phone pushes on change (debounced 4s) + pull-merges display completions on
+    open ("Done from your display: X" toast). E2E verified.
+  - ⏭ Stage 2: render endpoint — 800×480 1-bit image (raw framebuffer + BMP
+    preview) of the two Display views, from the server snapshot.
+  - ⏭ Stage 3: firmware (`firmware/`) — ESP32-S3: wake → fetch → display →
+    deep-sleep 15 min; buttons A=view, B=refresh, C=completeTop. Flash via USB.
 
 ## Done
 
