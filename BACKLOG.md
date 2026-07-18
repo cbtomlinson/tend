@@ -14,15 +14,24 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
   "guaranteed 5 pm backup / server snapshot" idea (Chelsea tabled it 2026-07-02:
   it weakens "data only on my phone" and isn't worth it until sync/e-ink needs it).
 - **Rate-limit persistence** (Supabase table instead of per-isolate memory),
-  **CSP header**, **task search**, **multi-device sync** — from the 2026-07-01
-  security review, all low priority.
+  **CSP header**, **multi-device sync** — from the 2026-07-01 security review,
+  all low priority. (Sync likely rides along with the e-ink server copy.)
 
 ## In progress
 
-- _(nothing right now)_
+- **E-ink display (reTerminal E1001).** Spec: 7.5" 800×480 1-bit panel,
+  ESP32-S3, Wi-Fi, battery + deep-sleep, 3 buttons (A=cycle view, B=refresh,
+  C=mark top task done). Device pulls a server-rendered 1-bit image on a
+  cadence. Render source = the existing Display-tab views (domain/eink.ts).
+  Requires the server-held board copy (Chelsea consented in principle by
+  green-lighting this phase — confirm details). Awaiting hardware/cadence
+  decisions; then: board push/pull endpoints → render endpoint → firmware.
 
 ## Done
 
+- 2026-07-17 — **Board search**: 🔍 chip at the start of the filter row expands
+  a search bar; every query word must match across title/note/waiting/ref;
+  live match count; empty groups hidden while searching. 54 tests.
 - 2026-07-17 — Capture upgrades: **crossed-out handwritten items are skipped**
   (scanner told struck-through = done); **review rows are editable** (tap the
   title to fix wording, cycle area AND bucket chips before committing);
