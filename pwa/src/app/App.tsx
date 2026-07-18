@@ -13,6 +13,7 @@ import { db } from '@/data/db';
 import { useActiveTasks, useBuckets } from '@/data/store';
 import { backupFilename, buildBackup } from '@/domain/backup';
 import { brandDate, emailHtml, plainText } from '@/domain/emailFormats';
+import { startBoardSync } from '@/services/boardSync';
 import { sendBoardEmail } from '@/services/email';
 import { weekday } from '@/domain/dates';
 import { AreaTag, SourceTag } from '@/components/tags';
@@ -44,6 +45,18 @@ export function App() {
     const onNeedRefresh = () => setUpdateReady(true);
     window.addEventListener('tend:need-refresh', onNeedRefresh);
     return () => window.removeEventListener('tend:need-refresh', onNeedRefresh);
+  }, []);
+
+  // Server board copy: push local changes up; pull display-made completions.
+  useEffect(() => {
+    return startBoardSync((titles) => {
+      ui.flash(
+        titles.length === 1
+          ? `Done from your display: ${titles[0]}`
+          : `Done from your display: ${titles.length} tasks`,
+      );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Data-loss detector: remember (outside IndexedDB) that tasks existed; if the

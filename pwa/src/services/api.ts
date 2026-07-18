@@ -69,7 +69,7 @@ export async function verifyPassword(candidate: string): Promise<boolean> {
   }
 }
 
-export type ApiEndpoint = 'vision' | 'email';
+export type ApiEndpoint = 'vision' | 'email' | 'board';
 
 export async function apiPost(
   endpoint: ApiEndpoint,
@@ -87,6 +87,18 @@ export async function apiPost(
 
   if (res.status === 401) {
     // Wrong/expired password — force re-login.
+    clearPassword();
+    onAuthFail?.();
+  }
+  return res;
+}
+
+export async function apiGet(endpoint: ApiEndpoint): Promise<Response> {
+  const url = BASE ? `${BASE}/${endpoint}` : `/api/${endpoint}`;
+  const headers: Record<string, string> = {};
+  if (REMOTE) headers['x-app-password'] = getPassword();
+  const res = await fetch(url, { headers });
+  if (res.status === 401) {
     clearPassword();
     onAuthFail?.();
   }
