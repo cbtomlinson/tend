@@ -229,34 +229,37 @@ export function DetailSheet() {
         </>
       )}
 
-      {/* "Accept Changes" just closes — your edits already saved as you typed. */}
-      <button type="button" className={s.done} onClick={closeOverlay}>
-        Accept Changes
-      </button>
-      <div className={s.secondaryActions}>
-        <button
-          type="button"
-          className={s.complete}
-          onClick={async () => {
-            await completeTask(task.id);
-            closeOverlay();
-            flash('Archived — kept in history');
-          }}
-        >
-          <Check size={16} strokeWidth={3} /> Mark complete
+      {/* Docked footer: always fully visible while the sheet scrolls behind it.
+          "Accept Changes" just closes — edits already saved as you typed. */}
+      <div className={s.footer}>
+        <button type="button" className={s.done} onClick={closeOverlay}>
+          Accept Changes
         </button>
-        <button
-          type="button"
-          className={s.delete}
-          aria-label="Delete task"
-          onClick={async () => {
-            await deleteTask(task.id);
-            closeOverlay();
-            flash('Deleted');
-          }}
-        >
-          <Trash2 size={16} />
-        </button>
+        <div className={s.secondaryActions}>
+          <button
+            type="button"
+            className={s.complete}
+            onClick={async () => {
+              await completeTask(task.id);
+              closeOverlay();
+              flash('Archived — kept in history');
+            }}
+          >
+            <Check size={16} strokeWidth={3} /> Mark complete
+          </button>
+          <button
+            type="button"
+            className={s.delete}
+            aria-label="Delete task"
+            onClick={async () => {
+              await deleteTask(task.id);
+              closeOverlay();
+              flash('Deleted');
+            }}
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
       </div>
     </BottomSheet>
   );
