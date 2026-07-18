@@ -55,33 +55,39 @@ export async function pushBoard(): Promise<boolean> {
   return false;
 }
 
-/** Apply display-made completions locally. Returns the completed titles. */
+/**
+ * Sync pass: apply display-made completions locally (when flagged), then
+ * ALWAYS push the current board so the server is fresh after every app open —
+ * regardless of whether anything changed on either side.
+ * Returns the titles completed from the display.
+ */
 export async function pullMergeBoard(): Promise<string[]> {
+  const titles: string[] = [];
   try {
     const res = await apiGet('board');
     if (!res.ok) return [];
     const data = (await res.json()) as ServerBoard;
-    if (!data.snapshot || !data.deviceMutated) return [];
 
-    const serverTasks = data.snapshot.tasks ?? [];
-    const local = await db.tasks.toArray();
-    const ids = serverArchivedIds(local, serverTasks);
-    const titles: string[] = [];
-    for (const id of ids) {
-      const st = serverTasks.find((t) => String(t.id) === String(id));
-      await db.tasks.update(id, {
-        status: 'archived',
-        archivedAt: st?.archivedAt ?? '',
-        archivedIso: st?.archivedIso ?? '',
-      });
-      const t = local.find((x) => String(x.id) === String(id));
-      if (t) titles.push(t.title);
+    if (data.snapshot && data.deviceMutated) {
+      const serverTasks = data.snapshot.tasks ?? [];
+      const local = await db.tasks.toArray();
+      const ids = serverArchivedIds(local, serverTasks);
+      for (const id of ids) {
+        const st = serverTasks.find((t) => String(t.id) === String(id));
+        await db.tasks.update(id, {
+          status: 'archived',
+          archivedAt: st?.archivedAt ?? '',
+          archivedIso: st?.archivedIso ?? '',
+        });
+        const t = local.find((x) => String(x.id) === String(id));
+        if (t) titles.push(t.title);
+      }
     }
-    // Fresh push clears device_mutated (and syncs anything else local).
+    // Unconditional push: keeps the server fresh and clears device_mutated.
     await pushBoard();
     return titles;
   } catch {
-    return [];
+    return titles;
   }
 }
 
