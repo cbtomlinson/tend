@@ -40,6 +40,10 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## Done
 
+- 2026-07-18 — **Green button retargeted**: completes the FIRST task of
+  Today's Priorities in board order (was global priority #1); no-op when that
+  bucket is empty; footer legend now "C · DONE #1 TODAY". Server-side only —
+  no reflash needed. 62 tests.
 - 2026-07-18 — Display field-feedback round 1: **archive sorts by completion
   recency** (newest first); **display lists follow phone board order** (was
   internal-id order); **View A main list = Today's Priorities** (was Actively
