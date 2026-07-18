@@ -25,7 +25,10 @@ function active(snapshot: Snapshot): SnapTask[] {
   return (snapshot.tasks ?? []).filter((t) => t.status === 'active');
 }
 function byBucket(tasks: SnapTask[], id: string): SnapTask[] {
-  return tasks.filter((t) => t.bucket === id);
+  // Same order the user arranged on the phone board.
+  return tasks
+    .filter((t) => t.bucket === id)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 function prioritySorted(tasks: SnapTask[]): SnapTask[] {
   return tasks
@@ -33,7 +36,8 @@ function prioritySorted(tasks: SnapTask[]): SnapTask[] {
     .sort(
       (a, b) =>
         (rank[b.prio ?? ''] ?? 0) - (rank[a.prio ?? ''] ?? 0) ||
-        (b.due ? 1 : 0) - (a.due ? 1 : 0),
+        (b.due ? 1 : 0) - (a.due ? 1 : 0) ||
+        (a.order ?? 0) - (b.order ?? 0),
     );
 }
 
@@ -111,15 +115,15 @@ export function drawViewA(snapshot: Snapshot): Bitmap {
   const bm = new Bitmap(W, H);
   const { iso } = nyParts();
   const act = active(snapshot);
-  const working = byBucket(act, 'active');
+  const working = byBucket(act, 'today');
   const top3 = prioritySorted(act).slice(0, 3);
 
   header(bm, 'priority + summary');
 
-  // Main column: Actively Working
+  // Main column: Today's Priorities (per Chelsea, 2026-07-18)
   const mainX = MARGIN;
   const mainW = 470;
-  bm.drawText(mainX, 62, `ACTIVELY WORKING - ${working.length}`, 2);
+  bm.drawText(mainX, 62, `TODAY'S PRIORITIES - ${working.length}`, 2);
   let y = 92;
   for (const t of working.slice(0, 4)) {
     prioSquare(bm, mainX, y + 2, 18, t.prio);
@@ -131,7 +135,7 @@ export function drawViewA(snapshot: Snapshot): Bitmap {
     }
   }
   if (working.length === 0) {
-    bm.drawText(mainX, 100, 'Nothing in Actively Working.', 2);
+    bm.drawText(mainX, 100, "Nothing in Today's Priorities.", 2);
   }
 
   // Side column
@@ -158,17 +162,18 @@ export function drawViewA(snapshot: Snapshot): Bitmap {
 
   // Summary counts
   const rows: [string, number][] = [
+    ['Active', byBucket(act, 'active').length],
     ['Waiting On', byBucket(act, 'waiting').length],
     ['Later', byBucket(act, 'later').length],
     ['Done today', doneToday(snapshot, iso)],
   ];
-  let sy = boxY + boxH + 26;
+  let sy = boxY + boxH + 22;
   for (const [label, n] of rows) {
     bm.drawText(sideX + 4, sy, label, 2);
     const num = String(n);
     bm.drawText(W - MARGIN - Bitmap.textW(num, 3), sy - 4, num, 3);
-    sy += 44;
-    bm.hline(sideX + 4, sy - 14, sideW - 8, 1);
+    sy += 40;
+    bm.hline(sideX + 4, sy - 12, sideW - 8, 1);
   }
 
   footer(bm);

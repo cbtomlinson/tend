@@ -68,7 +68,7 @@ export function EinkDisplay({ tasks, buckets }: { tasks: Task[]; buckets: Bucket
             {isA ? (
               <div className={s.viewA}>
                 <div className={s.aMain}>
-                  <div className={s.aHead}>ACTIVELY WORKING — {a.count}</div>
+                  <div className={s.aHead}>TODAY&rsquo;S PRIORITIES — {a.count}</div>
                   {a.rows.map((r) => (
                     <div key={r.id} className={s.aRow}>
                       <PrioSquare prio={r.prio} size={15} />
@@ -90,6 +90,10 @@ export function EinkDisplay({ tasks, buckets }: { tasks: Task[]; buckets: Bucket
                     ))}
                   </div>
                   <div>
+                    <div className={s.summaryRow}>
+                      <span>Active</span>
+                      <span className={s.summaryNum}>{a.active}</span>
+                    </div>
                     <div className={s.summaryRow}>
                       <span>Waiting On</span>
                       <span className={s.summaryNum}>{a.waiting}</span>

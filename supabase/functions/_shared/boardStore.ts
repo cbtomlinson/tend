@@ -47,6 +47,8 @@ export interface SnapTask {
   status?: string;
   archivedAt?: string;
   archivedIso?: string;
+  /** Board sort key — the order the user arranged on the phone. */
+  order?: number;
   [k: string]: unknown;
 }
 export interface SnapBucket {

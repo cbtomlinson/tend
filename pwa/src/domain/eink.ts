@@ -33,6 +33,7 @@ export interface EinkViewA {
   count: number;
   rows: EinkRow[];
   top3: { n: number; t: string }[];
+  active: number;
   waiting: number;
   later: number;
   done: number;
@@ -52,13 +53,15 @@ const row = (t: Task): EinkRow => ({
 });
 
 export function buildEinkA(active: Task[], doneToday: number): EinkViewA {
-  const working = byBucket(active, 'active');
+  // Main list = Today's Priorities (per Chelsea, 2026-07-18).
+  const working = byBucket(active, 'today');
   return {
     count: working.length,
     rows: working.slice(0, 4).map(row),
     top3: prioritySorted(active)
       .slice(0, 3)
       .map((t, i) => ({ n: i + 1, t: t.title })),
+    active: byBucket(active, 'active').length,
     waiting: byBucket(active, 'waiting').length,
     later: byBucket(active, 'later').length,
     done: doneToday,

@@ -115,10 +115,16 @@ export function useActiveTasks(): Task[] {
 }
 
 export function useArchivedTasks(): Task[] {
-  // Newest first (reverse insertion-ish): sort by order desc is fine for personal scale.
+  // Most recently completed first (completion date, then insertion order).
   return (
     useLiveQuery(
-      () => db.tasks.where('status').equals('archived').reverse().sortBy('order'),
+      async () => {
+        const all = await db.tasks.where('status').equals('archived').toArray();
+        const key = (t: Task) => t.archivedIso || shortToIso(t.archivedAt) || '';
+        return all.sort(
+          (a, b) => key(b).localeCompare(key(a)) || Number(b.order) - Number(a.order),
+        );
+      },
       [],
       [] as Task[],
     ) ?? []
