@@ -26,10 +26,13 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
     only) + `board` Edge Function (GET snapshot / POST push / completeTop),
     phone pushes on change (debounced 4s) + pull-merges display completions on
     open ("Done from your display: X" toast). E2E verified.
-  - ⏭ Stage 2: render endpoint — 800×480 1-bit image (raw framebuffer + BMP
-    preview) of the two Display views, from the server snapshot.
-  - ⏭ Stage 3: firmware (`firmware/`) — ESP32-S3: wake → fetch → display →
-    deep-sleep 15 min; buttons A=view, B=refresh, C=completeTop. Flash via USB.
+  - ✅ Stage 2 (2026-07-18): render endpoint live — `eink` Edge Function:
+    GET ?view=A|B&format=raw (48,000-byte framebuffer, MSB-first, 1=black) or
+    format=bmp (browser preview). Hand-built 5×7 bitmap font + 1-bit
+    rasterizer; both views visually verified against the design.
+  - ⏭ Stage 3: firmware (`firmware/`) — ESP32-S3: wake → fetch raw → display →
+    deep-sleep 15 min; buttons A=view, B=refresh, C=completeTop. Flash via USB
+    (needs Chelsea + device + her Wi-Fi credentials).
 
 ## Done
 
