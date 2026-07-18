@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronDown, ChevronUp, Plus, Search, Trash2, X } from 'lucide-react';
 import type { Bucket, Task } from '@/data/types';
 import { useAreas } from '@/domain/areas';
 import {
@@ -10,6 +10,7 @@ import {
   restoreTask,
 } from '@/data/store';
 import { useUI, type AreaFilter } from '@/app/uiState';
+import { matchesQuery } from '@/domain/search';
 import { waitingOrder } from '@/domain/waiting';
 import type { DragApi } from './useDrag';
 import { TaskCard } from './TaskCard';
@@ -39,33 +40,49 @@ export function Board({ tasks, buckets, drag }: Props) {
     [areas],
   );
 
+  // Search: opens a bar under the filters; every query word must match.
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const searchRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (searchOpen) searchRef.current?.focus();
+  }, [searchOpen]);
+  const searching = searchOpen && query.trim().length > 0;
+
   const shown = useMemo(
-    () => tasks.filter((t) => filterArea === 'All' || t.area === filterArea),
-    [tasks, filterArea],
+    () =>
+      tasks.filter(
+        (t) =>
+          (filterArea === 'All' || t.area === filterArea) &&
+          (!searching || matchesQuery(t, query)),
+      ),
+    [tasks, filterArea, searching, query],
   );
 
   const groups: Group[] = useMemo(() => {
-    if (groupBy === 'Area') {
-      return areas
-        .filter((a) => filterArea === 'All' || filterArea === a.name)
-        .map((a) => ({
-          id: a.name,
-          name: a.name,
-          tasks: shown.filter((t) => t.area === a.name),
-          fixed: !!a.fixed,
-        }));
-    }
-    return buckets.map((b) => ({
-      id: b.id,
-      name: b.name,
-      // Waiting On floats its flagged (waited-too-long) tasks to the top.
-      tasks:
-        b.id === 'waiting'
-          ? waitingOrder(shown.filter((t) => t.bucket === b.id))
-          : shown.filter((t) => t.bucket === b.id),
-      fixed: !!b.fixed,
-    }));
-  }, [groupBy, filterArea, shown, buckets, areas]);
+    const all =
+      groupBy === 'Area'
+        ? areas
+            .filter((a) => filterArea === 'All' || filterArea === a.name)
+            .map((a) => ({
+              id: a.name,
+              name: a.name,
+              tasks: shown.filter((t) => t.area === a.name),
+              fixed: !!a.fixed,
+            }))
+        : buckets.map((b) => ({
+            id: b.id,
+            name: b.name,
+            // Waiting On floats its flagged (waited-too-long) tasks to the top.
+            tasks:
+              b.id === 'waiting'
+                ? waitingOrder(shown.filter((t) => t.bucket === b.id))
+                : shown.filter((t) => t.bucket === b.id),
+            fixed: !!b.fixed,
+          }));
+    // While searching, empty groups are noise — hide them.
+    return searching ? all.filter((g) => g.tasks.length > 0) : all;
+  }, [groupBy, filterArea, shown, buckets, areas, searching]);
 
   const onCompleteTask = async (t: Task) => {
     await completeTask(t.id);
@@ -102,6 +119,17 @@ export function Board({ tasks, buckets, drag }: Props) {
   return (
     <div className={s.board}>
       <div className={s.chips}>
+        <button
+          type="button"
+          className={`${s.chip} ${s.chipSearch} ${searchOpen ? s.chipOn : ''}`}
+          aria-label="Search tasks"
+          onClick={() => {
+            if (searchOpen) setQuery('');
+            setSearchOpen(!searchOpen);
+          }}
+        >
+          <Search size={12} strokeWidth={2.5} />
+        </button>
         {areaFilters.map((a) => (
           <button
             key={a}
@@ -121,6 +149,35 @@ export function Board({ tasks, buckets, drag }: Props) {
           <Plus size={12} strokeWidth={2.5} />
         </button>
       </div>
+
+      {searchOpen && (
+        <div className={s.searchRow}>
+          <Search size={14} className={s.searchIcon} />
+          <input
+            ref={searchRef}
+            className={s.searchInput}
+            value={query}
+            placeholder="Search tasks…"
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          {searching && (
+            <span className={s.searchCount}>
+              {shown.length} match{shown.length === 1 ? '' : 'es'}
+            </span>
+          )}
+          <button
+            type="button"
+            className={s.searchClose}
+            aria-label="Close search"
+            onClick={() => {
+              setQuery('');
+              setSearchOpen(false);
+            }}
+          >
+            <X size={15} />
+          </button>
+        </div>
+      )}
 
       <div className={s.controls}>
         <div className={s.segTrack}>
