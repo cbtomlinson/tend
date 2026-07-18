@@ -175,6 +175,11 @@
   font: 600 16px var(--font-sans);
   cursor: pointer;
   margin-bottom: 10px;
+  /* Pin to the bottom of the scrolling sheet so it's always reachable,
+     even when the sheet content is taller than the screen. */
+  position: sticky;
+  bottom: 0;
+  box-shadow: 0 -10px 14px -8px rgba(20, 30, 40, 0.18);
 }
 .secondaryActions {
   display: flex;

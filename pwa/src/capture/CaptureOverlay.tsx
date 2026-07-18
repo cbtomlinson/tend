@@ -4,6 +4,7 @@ import {
   commitCapture,
   definePerson,
   useActiveTasks,
+  useBuckets,
   useLastCaptures,
   usePeople,
 } from '@/data/store';
@@ -19,9 +20,13 @@ import s from './CaptureOverlay.module.css';
 export function CaptureOverlay() {
   const board = useActiveTasks();
   const areas = useAreas();
+  const buckets = useBuckets();
   const people = usePeople();
   const lastCaptures = useLastCaptures();
   const areaNames = useMemo(() => areas.map((a) => a.name), [areas]);
+  // Manual entry (typed, not photographed) — treated as a tiny Hand capture so
+  // it flows through the same dedupe/review as everything else.
+  const [manualTitle, setManualTitle] = useState('');
   const {
     captureStep,
     setCaptureStep,
@@ -112,6 +117,39 @@ export function CaptureOverlay() {
         n.tid === tid ? { ...n, area: nextArea(n.area, areaNames) } : n,
       ),
     }));
+
+  const editTitle = (tid: string, title: string) =>
+    patchReconcile((r) => ({
+      ...r,
+      newItems: r.newItems.map((n) => (n.tid === tid ? { ...n, title } : n)),
+    }));
+
+  const cycleBucket = (tid: string) =>
+    patchReconcile((r) => ({
+      ...r,
+      newItems: r.newItems.map((n) => {
+        if (n.tid !== tid) return n;
+        const i = buckets.findIndex((b) => b.id === n.bucket);
+        const next = buckets[(i + 1) % buckets.length];
+        return { ...n, bucket: next?.id ?? n.bucket };
+      }),
+    }));
+
+  const bucketName = (id: string) =>
+    buckets.find((b) => b.id === id)?.name ?? 'Later';
+
+  const addManualTask = () => {
+    const title = manualTitle.trim();
+    if (!title) return;
+    addCapture({
+      source: 'Hand',
+      items: [{ title, area: areaNames[0] ?? 'ClinDoc' }],
+      phiSuspected: false,
+      unknownPeople: [],
+    });
+    setManualTitle('');
+    setCaptureStep('captured');
+  };
 
   // PHI advisory + names the scan saw that we don't know yet (live: answering
   // a card removes it because the people table updates underneath).
@@ -251,6 +289,25 @@ export function CaptureOverlay() {
               hidden
               onChange={onPick}
             />
+
+            <div className={s.manualDivider}>or type one in</div>
+            <div className={s.manualRow}>
+              <input
+                className={s.manualInput}
+                value={manualTitle}
+                placeholder="Add a task by hand…"
+                onChange={(e) => setManualTitle(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addManualTask()}
+              />
+              <button
+                type="button"
+                className={s.manualAdd}
+                disabled={!manualTitle.trim()}
+                onClick={addManualTask}
+              >
+                <Plus size={16} strokeWidth={2.5} />
+              </button>
+            </div>
           </div>
         )}
 
@@ -381,7 +438,12 @@ export function CaptureOverlay() {
                   {n.include && <Check size={13} strokeWidth={3} />}
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className={s.itemTitle}>{n.title}</div>
+                  <input
+                    className={s.itemTitleInput}
+                    value={n.title}
+                    aria-label="Edit task title"
+                    onChange={(e) => editTitle(n.tid, e.target.value)}
+                  />
                   <div className={s.newMeta}>
                     <span
                       className={s.areaCycle}
@@ -392,6 +454,12 @@ export function CaptureOverlay() {
                       onClick={() => cycleArea(n.tid)}
                     >
                       {n.area} <RotateCw size={10} />
+                    </span>
+                    <span
+                      className={s.bucketCycle}
+                      onClick={() => cycleBucket(n.tid)}
+                    >
+                      {bucketName(n.bucket)} <RotateCw size={10} />
                     </span>
                     {n.sources.map((src) => (
                       <SourceTag key={src} source={src} />

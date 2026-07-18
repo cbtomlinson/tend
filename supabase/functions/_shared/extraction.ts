@@ -195,6 +195,8 @@ export function buildSystem(people: Person[], areas: string[] = AREAS): string {
 
 Return one item per distinct task. Keep each title short and faithful to what's written — do not invent, merge, or embellish tasks.
 
+CROSSED OUT = DONE: if a handwritten item is struck through / crossed out / scribbled over, it is already finished — do NOT include it in items at all.
+
 For each task, guess its responsibility AREA:
 ${areaLines}
 

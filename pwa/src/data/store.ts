@@ -328,6 +328,8 @@ export interface ReconcileNew {
   tid: string;
   title: string;
   area: Task['area'];
+  /** Destination bucket (editable during review; defaults to 'later'). */
+  bucket: string;
   include: boolean;
   /** Every captured list this item appeared in (≥1; >1 when seen across lists). */
   sources: Source[];
@@ -381,6 +383,7 @@ export async function commitCapture(rec: Reconcile): Promise<CommitSummary> {
       title: string,
       area: Task['area'],
       sources: Source[],
+      bucket = 'later',
     ): Promise<Task> => {
       const id = await takeId();
       const inSources = Array.from(new Set(sources)) as Source[];
@@ -390,7 +393,7 @@ export async function commitCapture(rec: Reconcile): Promise<CommitSummary> {
         source: winningSource(inSources),
         area,
         prio: 'Med',
-        bucket: 'later',
+        bucket,
         order: tailOrder + n++,
         due: '',
         dueUrgency: '',
@@ -406,7 +409,9 @@ export async function commitCapture(rec: Reconcile): Promise<CommitSummary> {
 
     for (const item of rec.newItems) {
       if (!item.include) continue;
-      await db.tasks.put(await newTask(item.title, item.area, item.sources));
+      await db.tasks.put(
+        await newTask(item.title.trim(), item.area, item.sources, item.bucket),
+      );
       summary.added++;
     }
 

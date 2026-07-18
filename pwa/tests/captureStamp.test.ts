@@ -12,6 +12,7 @@ describe('commitCapture stamps capture recency', () => {
           tid: 'n0',
           title: 'Stamped task',
           area: 'ClinDoc',
+          bucket: 'active',
           include: true,
           sources: ['Epic SLG'],
         },
@@ -20,6 +21,10 @@ describe('commitCapture stamps capture recency', () => {
       already: [],
       gone: [],
     });
+
+    // The review-time bucket choice is honored.
+    const made = (await db.tasks.toArray()).find((t) => t.title === 'Stamped task');
+    expect(made?.bucket).toBe('active');
 
     const overall = (await db.meta.get('lastCaptureAt'))?.value ?? 0;
     const slg = (await db.meta.get('lastCapture:Epic SLG'))?.value ?? 0;

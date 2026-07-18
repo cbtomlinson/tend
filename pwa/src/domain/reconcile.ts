@@ -98,6 +98,7 @@ export function buildReconcile(
         tid: `n${n++}`,
         title: cand.title,
         area: cand.area,
+        bucket: 'later',
         include: true,
         sources: cand.sources,
       });

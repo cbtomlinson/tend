@@ -14,6 +14,7 @@ describe('buildReconcile', () => {
     );
     expect(rec.newItems).toHaveLength(1);
     expect(rec.newItems[0].include).toBe(true);
+    expect(rec.newItems[0].bucket).toBe('later'); // review can change it
     expect(rec.dups).toHaveLength(0);
   });
 
