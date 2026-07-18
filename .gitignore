@@ -39,3 +39,7 @@ supabase/.temp/
 
 # Built site now lives on the gh-pages branch (keeps this folder clean)
 docs/
+
+# Firmware credentials (Wi-Fi + app password) — never commit
+firmware/src/config.h
+firmware/.pio/

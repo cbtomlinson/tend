@@ -1,0 +1,17 @@
+// Copy to config.h (gitignored) and fill in. config.h holds real credentials
+// and must NEVER be committed.
+#pragma once
+
+#define WIFI_SSID "your-wifi-name"
+#define WIFI_PASS "your-wifi-password"
+
+// Tend API (Supabase functions base) + the app password.
+#define TEND_API_BASE "https://phbwrolphwdmjynyttmo.supabase.co/functions/v1"
+#define TEND_PASSWORD "the-app-password"
+
+// Minutes of deep sleep between automatic refreshes.
+#define REFRESH_MINUTES 15
+
+// Our raw frames use bit 1 = black. GxEPD2 expects 1 = white, so we invert
+// on write. Flip this if the panel ever shows white-on-black.
+#define INVERT_IMAGE true
