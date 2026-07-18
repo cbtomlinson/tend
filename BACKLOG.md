@@ -23,6 +23,13 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## Done
 
+- 2026-07-17 — Capture upgrades: **crossed-out handwritten items are skipped**
+  (scanner told struck-through = done); **review rows are editable** (tap the
+  title to fix wording, cycle area AND bucket chips before committing);
+  **manual task entry** on the capture screen ("or type one in" — flows through
+  the same dedupe/review as scans, source Hand); **Accept Changes pinned** to
+  the bottom of the edit sheet + safe-area padding (was hanging off screen).
+  50 tests.
 - 2026-07-11 — **Capture-recency indicator** on the capture screen: "Last
   capture: 2 days ago · Jul 9" plus a per-list line (SLG 2d · Zoho — · …).
   Stamped on every capture commit (meta lastCaptureAt + lastCapture:<source>).
