@@ -20,6 +20,9 @@
 #include <GxEPD2_BW.h>
 #include "config.h"
 
+// Log to BOTH native USB CDC and the UART bridge so either port shows output.
+#define LOGF(...) do { Serial.printf(__VA_ARGS__); Serial0.printf(__VA_ARGS__); } while (0)
+
 // ---- Pins (Seeed wiki: reTerminal E10xx) ----
 #define EPD_SCK_PIN 7
 #define EPD_MOSI_PIN 9
@@ -65,7 +68,7 @@ static bool fetchFrame(const char* view) {
   https.setTimeout(20000);
   int code = https.GET();
   if (code != 200) {
-    Serial.printf("[tend] eink GET %d\n", code);
+    LOGF("[tend] eink GET %d\n", code);
     https.end();
     return false;
   }
@@ -78,7 +81,7 @@ static bool fetchFrame(const char* view) {
     if (n == 0) delay(20);
   }
   https.end();
-  Serial.printf("[tend] frame bytes: %u\n", (unsigned)got);
+  LOGF("[tend] frame bytes: %u\n", (unsigned)got);
   return got == FRAME_BYTES;
 }
 
@@ -92,7 +95,7 @@ static bool completeTop() {
   https.addHeader("x-app-password", TEND_PASSWORD);
   https.setTimeout(20000);
   int code = https.POST("{\"completeTop\":true}");
-  Serial.printf("[tend] completeTop %d\n", code);
+  LOGF("[tend] completeTop %d\n", code);
   https.end();
   return code == 200;
 }
@@ -114,13 +117,14 @@ static void goToSleep() {
   const uint64_t mask =
       (1ULL << KEY_DONE) | (1ULL << KEY_REFRESH) | (1ULL << KEY_VIEW);
   esp_sleep_enable_ext1_wakeup(mask, ESP_EXT1_WAKEUP_ANY_LOW);
-  Serial.println("[tend] sleeping");
+  LOGF("%s\n", "[tend] sleeping");
   Serial.flush();
   esp_deep_sleep_start();
 }
 
 void setup() {
   Serial.begin(115200);
+  Serial0.begin(115200); // UART bridge (GPIO43/44) — visible via the USB serial port
   pinMode(KEY_DONE, INPUT);
   pinMode(KEY_REFRESH, INPUT);
   pinMode(KEY_VIEW, INPUT);
@@ -141,14 +145,14 @@ void setup() {
       doComplete = true; // C: archive top task
     } // KEY_REFRESH: nothing special — the refetch below IS the refresh
   }
-  Serial.printf("[tend] wake cause %d, view %s\n", (int)cause, view.c_str());
+  LOGF("[tend] wake cause %d, view %s\n", (int)cause, view.c_str());
 
   // Battery telemetry (log only for now).
   digitalWrite(BATTERY_ENABLE_PIN, HIGH);
   delay(10);
   float vbat = (analogReadMilliVolts(BATTERY_ADC_PIN) / 1000.0f) * 2.0f;
   digitalWrite(BATTERY_ENABLE_PIN, LOW);
-  Serial.printf("[tend] battery %.2fV\n", vbat);
+  LOGF("[tend] battery %.2fV\n", vbat);
 
   if (wifiUp()) {
     if (doComplete) {
@@ -158,10 +162,10 @@ void setup() {
     if (fetchFrame(view.c_str())) {
       paint();
     } else {
-      Serial.println("[tend] fetch failed — keeping last image");
+      LOGF("%s\n", "[tend] fetch failed — keeping last image");
     }
   } else {
-    Serial.println("[tend] wifi failed — keeping last image");
+    LOGF("%s\n", "[tend] wifi failed — keeping last image");
   }
   WiFi.disconnect(true);
 
