@@ -204,27 +204,32 @@ export function drawViewB(snapshot: Snapshot): Bitmap {
 
   let y = 90;
   let shown = 0;
-  const ROW_H = 50; // compact: title + one chip/note line (Chelsea, 2026-07-18)
+  const ROW_H = 50;
+  const GUTTER = 44; // circle with the wait-days stacked beneath it
   for (const t of items) {
     if (y + ROW_H > 442) break;
 
-    prioMark(bm, mainX, y + 3, 18, t.prio);
-    bm.drawText(F_MED, mainX + 30, y, Bitmap.fit(F_MED, t.title, mainW - 30));
-
-    // One info line: [waiting Nd] the note
-    const chipText = `waiting ${days(t)}d`;
-    let cx = mainX + 30;
+    // Left gutter: priority circle, "Nd" underneath (inverted when stale).
+    prioMark(bm, mainX + 6, y + 1, 18, t.prio);
+    const dTxt = `${days(t)}d`;
+    const dW = Bitmap.textW(F_SMALL, dTxt);
+    const dX = mainX + 15 - Math.floor(dW / 2); // centered under the circle
     if (stale(t)) {
-      const chipW = Bitmap.textW(F_SMALL, chipText) + 12;
-      bm.fillRect(cx, y + 25, chipW, 18);
-      bm.drawText(F_SMALL, cx + 6, y + 26, chipText, true);
-      cx += chipW + 10;
+      bm.fillRect(dX - 3, y + 22, dW + 6, 18);
+      bm.drawText(F_SMALL, dX, y + 23, dTxt, true);
     } else {
-      cx = bm.drawText(F_SMALL, cx, y + 26, chipText) + 10;
+      bm.drawText(F_SMALL, dX, y + 23, dTxt);
     }
+
+    bm.drawText(F_MED, mainX + GUTTER, y, Bitmap.fit(F_MED, t.title, mainW - GUTTER));
     const note = t.note?.trim();
     if (note) {
-      bm.drawText(F_SMALL, cx, y + 26, Bitmap.fit(F_SMALL, note, mainX + mainW - cx));
+      bm.drawText(
+        F_SMALL,
+        mainX + GUTTER,
+        y + 26,
+        Bitmap.fit(F_SMALL, note, mainW - GUTTER),
+      );
     }
     y += ROW_H;
     shown++;

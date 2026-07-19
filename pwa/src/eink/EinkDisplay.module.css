@@ -259,3 +259,17 @@
   color: #fff;
   padding: 0 4px;
 }
+
+/* Waiting view gutter: priority circle with the day count stacked under it. */
+.waitGutter {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 30px;
+}
+.waitDays {
+  font: 600 10px var(--font-mono);
+  color: #111;
+}

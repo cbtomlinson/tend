@@ -152,15 +152,17 @@ export function EinkDisplay({ tasks, buckets }: { tasks: Task[]; buckets: Bucket
                   <div className={s.aHead}>WAITING ON — {waiting.length}</div>
                   {waiting.slice(0, 7).map((r) => (
                     <div key={r.id} className={s.aRow}>
-                      <PrioSquare prio={r.prio} size={15} />
+                      <div className={s.waitGutter}>
+                        <PrioSquare prio={r.prio} size={15} />
+                        <span
+                          className={`${s.waitDays} ${r.stale ? s.waitChipStale : ''}`}
+                        >
+                          {r.chip.replace('waiting ', '')}
+                        </span>
+                      </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div className={s.aRowTitle}>{r.title}</div>
-                        <div className={s.aRowMeta}>
-                          <span className={r.stale ? s.waitChipStale : undefined}>
-                            {r.chip}
-                          </span>
-                          {r.note && <> {r.note}</>}
-                        </div>
+                        {r.note && <div className={s.aRowMeta}>{r.note}</div>}
                       </div>
                     </div>
                   ))}
