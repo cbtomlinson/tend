@@ -44,6 +44,13 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## Done
 
+- 2026-07-18 — Display design round 3: **Spleen bitmap fonts** (professionally
+  designed, BSD-2, converted from BDF at native 8×16/12×24/16×32 — no more
+  scaled-pixel staircase anywhere); **View C: Quick Wins bucket** (firmware
+  cycles A→B→C, Display tab has a third preview, name-matched so renaming the
+  bucket still works if 'quick' stays in it); **Total Tasks** added to the
+  View A stat band (between Later and Done today). Firmware reflashed.
+
 - 2026-07-18 — Display design round 2: **new hand-drawn 8×14 small font**
   (finer strokes, true descenders — metas/labels/legends readable now);
   **View A redesigned**: full-width task titles (~60 chars, up to 5 rows),
