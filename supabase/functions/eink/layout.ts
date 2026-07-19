@@ -228,7 +228,7 @@ export function drawViewB(snapshot: Snapshot): Bitmap {
         F_SMALL,
         mainX + GUTTER,
         y + 26,
-        Bitmap.fit(F_SMALL, note, mainW - GUTTER),
+        Bitmap.fit(F_SMALL, `Note: ${note}`, mainW - GUTTER),
       );
     }
     y += ROW_H;

@@ -162,7 +162,7 @@ export function EinkDisplay({ tasks, buckets }: { tasks: Task[]; buckets: Bucket
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div className={s.aRowTitle}>{r.title}</div>
-                        {r.note && <div className={s.aRowMeta}>{r.note}</div>}
+                        {r.note && <div className={s.aRowMeta}>Note: {r.note}</div>}
                       </div>
                     </div>
                   ))}
