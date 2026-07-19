@@ -13,8 +13,6 @@ const HEADER_RULE_Y = 50;
 const FOOTER_RULE_Y = 446;
 const TZ = 'America/New_York';
 
-const rank: Record<string, number> = { High: 3, Med: 2, Low: 1 };
-
 function shortSource(s?: string): string {
   return s === 'Epic SLG' ? 'SLG' : (s ?? '');
 }
@@ -29,16 +27,6 @@ function byBucket(tasks: SnapTask[], id: string): SnapTask[] {
   return tasks
     .filter((t) => t.bucket === id)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-}
-function prioritySorted(tasks: SnapTask[]): SnapTask[] {
-  return tasks
-    .slice()
-    .sort(
-      (a, b) =>
-        (rank[b.prio ?? ''] ?? 0) - (rank[a.prio ?? ''] ?? 0) ||
-        (b.due ? 1 : 0) - (a.due ? 1 : 0) ||
-        (a.order ?? 0) - (b.order ?? 0),
-    );
 }
 
 function nyParts(): { date: string; time: string; iso: string } {
@@ -94,7 +82,7 @@ function prioSquare(bm: Bitmap, x: number, y: number, size: number, prio?: strin
 function header(bm: Bitmap, sub: string): void {
   const { date, time } = nyParts();
   bm.drawText(MARGIN, 14, 'TEND', 3);
-  bm.drawText(MARGIN + Bitmap.textW('TEND', 3) + 12, 26, sub, 1);
+  bm.drawSmall(MARGIN + Bitmap.textW('TEND', 3) + 12, 24, sub);
   const right = `${date} · upd ${time}`;
   bm.drawText(W - MARGIN - Bitmap.textW(right, 2), 20, right, 2);
   bm.hline(MARGIN, HEADER_RULE_Y, W - 2 * MARGIN, 2);
@@ -106,8 +94,8 @@ function footer(bm: Bitmap): void {
   const third = (W - 2 * MARGIN) / 3;
   labels.forEach((label, i) => {
     const cx = MARGIN + third * i + third / 2;
-    bm.drawText(cx - Bitmap.textW(label, 1) / 2, 458, label, 1);
-    if (i > 0) bm.vline(MARGIN + third * i, 452, 24, 1);
+    bm.drawSmall(cx - Bitmap.smallTextW(label) / 2, 458, label);
+    if (i > 0) bm.vline(MARGIN + third * i, 454, 22, 1);
   });
 }
 
@@ -116,65 +104,48 @@ export function drawViewA(snapshot: Snapshot): Bitmap {
   const { iso } = nyParts();
   const act = active(snapshot);
   const working = byBucket(act, 'today');
-  const top3 = prioritySorted(act).slice(0, 3);
 
-  header(bm, 'priority + summary');
+  header(bm, "today's priorities");
 
-  // Main column: Today's Priorities (per Chelsea, 2026-07-18)
+  // Full-width task list: longer titles, up to 5 rows (Chelsea, 2026-07-18 —
+  // Top 3 box tabled in favor of room).
   const mainX = MARGIN;
-  const mainW = 470;
-  bm.drawText(mainX, 62, `TODAY'S PRIORITIES - ${working.length}`, 2);
-  let y = 92;
-  for (const t of working.slice(0, 4)) {
+  const mainW = W - 2 * MARGIN;
+  bm.drawText(mainX, 60, `TODAY'S PRIORITIES - ${working.length}`, 2);
+  const ROWS = 5;
+  let y = 88;
+  const shown = working.slice(0, ROWS);
+  for (const t of shown) {
     prioSquare(bm, mainX, y + 2, 18, t.prio);
     bm.drawText(mainX + 30, y, Bitmap.fit(t.title, 2, mainW - 30), 2);
-    bm.drawText(mainX + 30, y + 32, meta(t), 1);
-    y += 62;
-    if (t !== working[Math.min(3, working.length - 1)]) {
-      bm.hline(mainX, y - 10, mainW, 1);
-    }
+    bm.drawSmall(mainX + 30, y + 32, Bitmap.fitSmall(meta(t), mainW - 30));
+    y += 58;
+    if (t !== shown[shown.length - 1]) bm.hline(mainX, y - 8, mainW, 1);
+  }
+  if (working.length > ROWS) {
+    bm.drawSmall(mainX + 30, y - 2, `+${working.length - ROWS} more in Tend`);
   }
   if (working.length === 0) {
     bm.drawText(mainX, 100, "Nothing in Today's Priorities.", 2);
   }
 
-  // Side column
-  const sideX = 516;
-  const sideW = W - MARGIN - sideX;
-  bm.vline(504, HEADER_RULE_Y + 8, FOOTER_RULE_Y - HEADER_RULE_Y - 16, 1);
-
-  // Top 3 box
-  const boxY = 60;
-  const boxH = 140;
-  bm.rect(sideX, boxY, sideW, boxH, 2);
-  bm.drawText(sideX + 12, boxY + 10, 'TOP 3 PRIORITIES', 1);
-  top3.forEach((t, i) => {
-    const ry = boxY + 28 + i * 34;
-    bm.fillRect(sideX + 12, ry, 18, 18);
-    bm.drawText(sideX + 17, ry + 2, String(i + 1), 2, true);
-    bm.drawText(
-      sideX + 40,
-      ry + 2,
-      Bitmap.fit(t.title, 2, sideW - 52),
-      2,
-    );
-  });
-
-  // Summary counts
-  const rows: [string, number][] = [
+  // Bottom stat band: Active · Waiting On · Later · Done today
+  const bandTop = 384;
+  bm.hline(MARGIN, bandTop, W - 2 * MARGIN, 1);
+  const stats: [string, number][] = [
     ['Active', byBucket(act, 'active').length],
     ['Waiting On', byBucket(act, 'waiting').length],
     ['Later', byBucket(act, 'later').length],
     ['Done today', doneToday(snapshot, iso)],
   ];
-  let sy = boxY + boxH + 22;
-  for (const [label, n] of rows) {
-    bm.drawText(sideX + 4, sy, label, 2);
+  const cell = (W - 2 * MARGIN) / stats.length;
+  stats.forEach(([label, n], i) => {
+    const cx = MARGIN + cell * i + cell / 2;
     const num = String(n);
-    bm.drawText(W - MARGIN - Bitmap.textW(num, 3), sy - 4, num, 3);
-    sy += 40;
-    bm.hline(sideX + 4, sy - 12, sideW - 8, 1);
-  }
+    bm.drawText(cx - Bitmap.textW(num, 3) / 2, 396, num, 3);
+    bm.drawSmall(cx - Bitmap.smallTextW(label) / 2, 422, label);
+    if (i > 0) bm.vline(MARGIN + cell * i, bandTop + 8, 48, 1);
+  });
 
   footer(bm);
   return bm;
@@ -205,12 +176,12 @@ export function drawViewB(snapshot: Snapshot): Bitmap {
     for (const t of items.slice(0, 4)) {
       prioSquare(bm, x, y + 2, 14, t.prio);
       bm.drawText(x + 22, y, Bitmap.fit(t.title, 2, colW - 40), 2);
-      bm.drawText(x + 22, y + 30, Bitmap.fit(meta(t), 1, colW - 40), 1);
+      bm.drawSmall(x + 22, y + 30, Bitmap.fitSmall(meta(t), colW - 40));
       y += 82;
     }
     const more = items.length - 4;
-    if (more > 0) bm.drawText(x, 424, `+${more} more`, 1);
-    if (items.length === 0) bm.drawText(x, 100, 'Empty', 1);
+    if (more > 0) bm.drawSmall(x, 424, `+${more} more`);
+    if (items.length === 0) bm.drawSmall(x, 100, 'Empty');
   });
 
   footer(bm);

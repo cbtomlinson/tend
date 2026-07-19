@@ -1,4 +1,5 @@
 import { FONT_H, FONT_W, glyphOf, transliterate } from './font.ts';
+import { SMALL_H, SMALL_W, smallGlyphOf } from './fontSmall.ts';
 
 /*
  * Minimal 1-bit rasterizer for the 800×480 e-ink panel. Bit set = black ink.
@@ -73,6 +74,37 @@ export class Bitmap {
       cx += Bitmap.charW(scale);
     }
     return cx;
+  }
+
+  /** Small-font advance width (one glyph cell + 1 spacing column). */
+  static smallTextW(text: string): number {
+    return transliterate(text).length * (SMALL_W + 1);
+  }
+  static smallTextH(): number {
+    return SMALL_H;
+  }
+
+  /** Draw fine 8×14 small-font text (metas, labels, legends). */
+  drawSmall(x: number, y: number, text: string): number {
+    let cx = x;
+    for (const ch of transliterate(text)) {
+      const glyph = smallGlyphOf(ch);
+      for (let gy = 0; gy < SMALL_H; gy++) {
+        for (let gx = 0; gx < SMALL_W; gx++) {
+          if (glyph[gy][gx] === 'X') this.set(cx + gx, y + gy, true);
+        }
+      }
+      cx += SMALL_W + 1;
+    }
+    return cx;
+  }
+
+  /** Truncate (with "..") so small-font text fits within maxW. */
+  static fitSmall(text: string, maxW: number): string {
+    const t = transliterate(text);
+    if (Bitmap.smallTextW(t) <= maxW) return t;
+    const chars = Math.max(1, Math.floor(maxW / (SMALL_W + 1)) - 2);
+    return `${t.slice(0, chars)}..`;
   }
 
   /** Truncate (with "..") so the text fits within maxW at the scale. */
