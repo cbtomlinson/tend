@@ -1,9 +1,10 @@
-import { FONT_H, FONT_W, glyphOf, transliterate } from './font.ts';
-import { SMALL_H, SMALL_W, smallGlyphOf } from './fontSmall.ts';
+import { transliterate } from './font.ts';
+import type { BFont } from './fonts.ts';
 
 /*
  * Minimal 1-bit rasterizer for the 800×480 e-ink panel. Bit set = black ink.
- * Text comes from the 5×7 font scaled by integer factors (scale 2 => 10×14).
+ * Text is drawn from Spleen bitmap fonts (see fonts.ts) at native resolution —
+ * no scaling, no staircase.
  */
 
 export class Bitmap {
@@ -48,71 +49,39 @@ export class Bitmap {
     this.fillRect(x, y, thickness, h);
   }
 
-  /** Advance width of one char at a scale (glyph + 1 spacing column). */
-  static charW(scale: number): number {
-    return (FONT_W + 1) * scale;
-  }
-  static textW(text: string, scale: number): number {
-    return transliterate(text).length * Bitmap.charW(scale);
-  }
-  static textH(scale: number): number {
-    return FONT_H * scale;
+  /** Advance width of a string in a font (monospace cells). */
+  static textW(font: BFont, text: string): number {
+    return transliterate(text).length * font.w;
   }
 
-  /** Draw text; `invert` draws white-on-black (caller paints the black bg). */
-  drawText(x: number, y: number, text: string, scale = 1, invert = false): number {
-    let cx = x;
-    for (const ch of transliterate(text)) {
-      const glyph = glyphOf(ch);
-      for (let gy = 0; gy < FONT_H; gy++) {
-        for (let gx = 0; gx < FONT_W; gx++) {
-          if (glyph[gy][gx] === 'X') {
-            this.fillRect(cx + gx * scale, y + gy * scale, scale, scale, !invert);
-          }
-        }
-      }
-      cx += Bitmap.charW(scale);
-    }
-    return cx;
-  }
-
-  /** Small-font advance width (one glyph cell + 1 spacing column). */
-  static smallTextW(text: string): number {
-    return transliterate(text).length * (SMALL_W + 1);
-  }
-  static smallTextH(): number {
-    return SMALL_H;
-  }
-
-  /** Draw fine 8×14 small-font text (metas, labels, legends). */
-  drawSmall(x: number, y: number, text: string): number {
-    let cx = x;
-    for (const ch of transliterate(text)) {
-      const glyph = smallGlyphOf(ch);
-      for (let gy = 0; gy < SMALL_H; gy++) {
-        for (let gx = 0; gx < SMALL_W; gx++) {
-          if (glyph[gy][gx] === 'X') this.set(cx + gx, y + gy, true);
-        }
-      }
-      cx += SMALL_W + 1;
-    }
-    return cx;
-  }
-
-  /** Truncate (with "..") so small-font text fits within maxW. */
-  static fitSmall(text: string, maxW: number): string {
+  /** Truncate (with "..") so the text fits within maxW. */
+  static fit(font: BFont, text: string, maxW: number): string {
     const t = transliterate(text);
-    if (Bitmap.smallTextW(t) <= maxW) return t;
-    const chars = Math.max(1, Math.floor(maxW / (SMALL_W + 1)) - 2);
+    if (Bitmap.textW(font, t) <= maxW) return t;
+    const chars = Math.max(1, Math.floor(maxW / font.w) - 2);
     return `${t.slice(0, chars)}..`;
   }
 
-  /** Truncate (with "..") so the text fits within maxW at the scale. */
-  static fit(text: string, scale: number, maxW: number): string {
-    const t = transliterate(text);
-    if (Bitmap.textW(t, scale) <= maxW) return t;
-    const chars = Math.max(1, Math.floor(maxW / Bitmap.charW(scale)) - 2);
-    return `${t.slice(0, chars)}..`;
+  /** Draw text; `invert` = white-on-black (caller paints the black bg). */
+  drawText(
+    font: BFont,
+    x: number,
+    y: number,
+    text: string,
+    invert = false,
+  ): number {
+    let cx = x;
+    for (const ch of transliterate(text)) {
+      const rows = font.g[ch] ?? font.g['?'] ?? [];
+      for (let gy = 0; gy < font.h; gy++) {
+        const row = rows[gy] ?? 0;
+        for (let gx = 0; gx < font.w; gx++) {
+          if ((row >> (font.w - 1 - gx)) & 1) this.set(cx + gx, y + gy, !invert);
+        }
+      }
+      cx += font.w;
+    }
+    return cx;
   }
 
   /** Packed framebuffer for the panel: row-major, MSB = leftmost, 1 = black. */

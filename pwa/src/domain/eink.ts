@@ -68,6 +68,19 @@ export function buildEinkA(active: Task[], doneToday: number): EinkViewA {
   };
 }
 
+/** View C: the Quick Wins bucket (matched by name), as one full-width list. */
+export function buildEinkC(active: Task[], buckets: Bucket[]): EinkCol | null {
+  const quick = buckets.find((b) => b.name.toLowerCase().includes('quick'));
+  if (!quick) return null;
+  const items = byBucket(active, quick.id);
+  return {
+    name: quick.name.toUpperCase(),
+    count: items.length,
+    rows: items.slice(0, 6).map(row),
+    more: Math.max(0, items.length - 6),
+  };
+}
+
 export function buildEinkB(active: Task[], buckets: Bucket[]): EinkCol[] {
   return buckets.slice(0, 3).map((b) => {
     const items = byBucket(active, b.id);

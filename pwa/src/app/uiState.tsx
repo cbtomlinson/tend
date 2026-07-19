@@ -19,7 +19,7 @@ import type { Extraction } from '@/services/vision';
 export type View = 'board' | 'archive' | 'eink';
 export type Overlay = null | 'capture' | 'detail' | 'email' | 'newbucket' | 'newarea';
 export type CaptureStep = 'shoot' | 'scanning' | 'captured' | 'review';
-export type EinkView = 'A' | 'B';
+export type EinkView = 'A' | 'B' | 'C';
 export type EmailFormat = 'priority' | 'full' | 'active' | 'plain';
 export type AreaFilter = 'All' | Area;
 

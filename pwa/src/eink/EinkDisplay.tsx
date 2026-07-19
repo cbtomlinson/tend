@@ -1,6 +1,6 @@
 import { Check, RotateCcw, RotateCw } from 'lucide-react';
 import type { Bucket, Prio, Task } from '@/data/types';
-import { buildEinkA, buildEinkB } from '@/domain/eink';
+import { buildEinkA, buildEinkB, buildEinkC } from '@/domain/eink';
 import { today, weekday } from '@/domain/dates';
 import { useArchivedTasks } from '@/data/store';
 import { useUI } from '@/app/uiState';
@@ -23,7 +23,9 @@ export function EinkDisplay({ tasks, buckets }: { tasks: Task[]; buckets: Bucket
 
   const a = buildEinkA(tasks, doneToday);
   const cols = buildEinkB(tasks, buckets);
+  const quick = buildEinkC(tasks, buckets);
   const isA = einkView === 'A';
+  const isC = einkView === 'C';
 
   const headDate = `${weekday().toUpperCase()} ${today().toUpperCase()}`;
 
@@ -45,10 +47,17 @@ export function EinkDisplay({ tasks, buckets }: { tasks: Task[]; buckets: Bucket
         </button>
         <button
           type="button"
-          className={`${s.tab} ${!isA ? s.tabOn : ''}`}
+          className={`${s.tab} ${einkView === 'B' ? s.tabOn : ''}`}
           onClick={() => setEinkView('B')}
         >
           View 2 · columns
+        </button>
+        <button
+          type="button"
+          className={`${s.tab} ${isC ? s.tabOn : ''}`}
+          onClick={() => setEinkView('C')}
+        >
+          View 3 · quick wins
         </button>
       </div>
 
@@ -59,13 +68,41 @@ export function EinkDisplay({ tasks, buckets }: { tasks: Task[]; buckets: Bucket
               <div style={{ display: 'flex', alignItems: 'baseline' }}>
                 <span className={s.brand}>TEND</span>
                 <span className={s.brandSub}>
-                  {isA ? 'priority + summary' : 'buckets'}
+                  {isA ? "today's priorities" : isC ? 'quick wins' : 'buckets'}
                 </span>
               </div>
               <div className={s.clock}>{headDate} · ↻ 7:02a</div>
             </div>
 
-            {isA ? (
+            {isC ? (
+              <div className={s.viewA}>
+                <div className={s.aMain} style={{ width: '100%' }}>
+                  {quick ? (
+                    <>
+                      <div className={s.aHead}>
+                        {quick.name} — {quick.count}
+                      </div>
+                      {quick.rows.map((r) => (
+                        <div key={r.id} className={s.aRow}>
+                          <PrioSquare prio={r.prio} size={15} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div className={s.aRowTitle}>{r.title}</div>
+                            <div className={s.aRowMeta}>{r.meta}</div>
+                          </div>
+                        </div>
+                      ))}
+                      {quick.more > 0 && (
+                        <div className={s.aRowMeta}>+{quick.more} more in Tend</div>
+                      )}
+                    </>
+                  ) : (
+                    <div className={s.aHead}>
+                      No &lsquo;Quick Wins&rsquo; bucket on the board yet.
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : isA ? (
               <div className={s.viewA}>
                 <div className={s.aMain}>
                   <div className={s.aHead}>TODAY&rsquo;S PRIORITIES — {a.count}</div>

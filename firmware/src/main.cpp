@@ -139,7 +139,8 @@ void setup() {
   if (cause == ESP_SLEEP_WAKEUP_EXT1) {
     uint64_t pins = esp_sleep_get_ext1_wakeup_status();
     if (pins & (1ULL << KEY_VIEW)) {
-      view = view == "A" ? "B" : "A"; // A: cycle view
+      // A: cycle view — today's priorities -> buckets -> quick wins -> ...
+      view = view == "A" ? "B" : view == "B" ? "C" : "A";
       prefs.putString("view", view);
     } else if (pins & (1ULL << KEY_DONE)) {
       doComplete = true; // C: archive top task

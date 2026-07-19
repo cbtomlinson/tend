@@ -1,6 +1,6 @@
 import { CORS, gate, json, preflight } from '../_shared/http.ts';
 import { hasServiceKey, loadBoardRow } from '../_shared/boardStore.ts';
-import { drawEmpty, drawViewA, drawViewB } from './layout.ts';
+import { drawEmpty, drawViewA, drawViewB, drawViewC } from './layout.ts';
 
 /*
  * E-ink render endpoint. The reTerminal fetches:
@@ -19,7 +19,8 @@ Deno.serve(async (req: Request) => {
 
   try {
     const url = new URL(req.url);
-    const view = url.searchParams.get('view') === 'B' ? 'B' : 'A';
+    const v = url.searchParams.get('view');
+    const view = v === 'B' || v === 'C' ? v : 'A';
     const format = url.searchParams.get('format') === 'bmp' ? 'bmp' : 'raw';
 
     const row = await loadBoardRow();
@@ -28,7 +29,9 @@ Deno.serve(async (req: Request) => {
       ? drawEmpty()
       : view === 'B'
         ? drawViewB(row.snapshot)
-        : drawViewA(row.snapshot);
+        : view === 'C'
+          ? drawViewC(row.snapshot)
+          : drawViewA(row.snapshot);
 
     const body = format === 'bmp' ? bm.toBMP() : bm.toRaw();
     return new Response(body.buffer as ArrayBuffer, {
