@@ -5,7 +5,7 @@ import type { SnapBucket, SnapTask, Snapshot } from '../_shared/boardStore.ts';
 /*
  * Draws the e-ink views (mirrors pwa/src/domain/eink.ts + EinkDisplay).
  * 800×480, 1-bit. Text is native-resolution Spleen (no scaling, no staircase).
- * Priority is filled / half / empty squares — never color.
+ * Priority is filled / half / hollow CIRCLES (matches the phone) — never color.
  *   View A — Today's Priorities + stat band
  *   View B — three bucket columns
  *   View C — Quick Wins bucket
@@ -72,15 +72,21 @@ function doneToday(snapshot: Snapshot, isoToday: string): number {
   ).length;
 }
 
-/** High = filled, Med = left-half filled, Low = outline. */
-function prioSquare(bm: Bitmap, x: number, y: number, size: number, prio?: string): void {
+/**
+ * Priority mark, matching the phone app's dots: High = filled circle,
+ * Med = left-half filled, Low = hollow ring (circles per Chelsea, 2026-07-18).
+ */
+function prioMark(bm: Bitmap, x: number, y: number, size: number, prio?: string): void {
+  const r = Math.floor(size / 2);
+  const cx = x + r;
+  const cy = y + r;
   if (prio === 'High') {
-    bm.fillRect(x, y, size, size);
+    bm.fillCircle(cx, cy, r);
   } else if (prio === 'Med') {
-    bm.rect(x, y, size, size, 2);
-    bm.fillRect(x, y, Math.floor(size / 2), size);
+    bm.ring(cx, cy, r, 2);
+    bm.fillCircle(cx, cy, r, 'left');
   } else {
-    bm.rect(x, y, size, size, 2);
+    bm.ring(cx, cy, r, 2);
   }
 }
 
@@ -121,7 +127,7 @@ function taskList(
   let y = 90;
   const shown = tasks.slice(0, rowsMax);
   for (const t of shown) {
-    prioSquare(bm, mainX, y + 3, 18, t.prio);
+    prioMark(bm, mainX, y + 3, 18, t.prio);
     bm.drawText(F_MED, mainX + 30, y, Bitmap.fit(F_MED, t.title, mainW - 30));
     bm.drawText(F_SMALL, mainX + 30, y + 26, Bitmap.fit(F_SMALL, meta(t), mainW - 30));
     y += 56;
@@ -186,7 +192,7 @@ export function drawViewB(snapshot: Snapshot): Bitmap {
 
     let y = 96;
     for (const t of items.slice(0, 4)) {
-      prioSquare(bm, x, y + 3, 14, t.prio);
+      prioMark(bm, x, y + 3, 14, t.prio);
       bm.drawText(F_MED, x + 22, y, Bitmap.fit(F_MED, t.title, colW - 40));
       bm.drawText(F_SMALL, x + 22, y + 28, Bitmap.fit(F_SMALL, meta(t), colW - 40));
       y += 84;

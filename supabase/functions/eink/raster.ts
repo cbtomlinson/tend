@@ -49,6 +49,31 @@ export class Bitmap {
     this.fillRect(x, y, thickness, h);
   }
 
+  /** Filled circle. `half: 'left'` fills only the left semicircle. */
+  fillCircle(cx: number, cy: number, r: number, half?: 'left'): void {
+    const r2 = r * r;
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        if (dx * dx + dy * dy <= r2 && (!half || dx <= 0)) {
+          this.set(cx + dx, cy + dy, true);
+        }
+      }
+    }
+  }
+
+  /** Circle outline with the given stroke thickness. */
+  ring(cx: number, cy: number, r: number, stroke = 2): void {
+    const outer = r * r;
+    const rin = r - stroke;
+    const inner = rin * rin;
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        const d = dx * dx + dy * dy;
+        if (d <= outer && d >= inner) this.set(cx + dx, cy + dy, true);
+      }
+    }
+  }
+
   /** Advance width of a string in a font (monospace cells). */
   static textW(font: BFont, text: string): number {
     return transliterate(text).length * font.w;

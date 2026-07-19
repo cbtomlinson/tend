@@ -234,9 +234,11 @@
 }
 
 /* Priority squares (B/W only) */
+/* Priority marks are circles (matches the phone board and the panel). */
 .sq {
   flex: none;
   box-sizing: border-box;
+  border-radius: 50%;
 }
 .sqHigh {
   background: #111;
@@ -244,7 +246,7 @@
 .sqMed {
   background: #fff;
   border: 2px solid #111;
-  background-image: linear-gradient(135deg, #111 50%, #fff 50%);
+  background-image: linear-gradient(90deg, #111 50%, #fff 50%);
 }
 .sqLow {
   background: #fff;
