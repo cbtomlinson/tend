@@ -8,6 +8,10 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## Ideas / Someday
 
+- **Top 3 Priorities box on the display** — tabled 2026-07-18 (Chelsea:
+  redundant with Today's Priorities as the main list). The priority-ranking
+  logic still exists if it ever earns a spot back.
+
 - **E-ink version.** Original long-term goal: phone-first now, a low-refresh
   e-ink layout later. Future phase, not started. NOTE: will likely need a
   server-held copy of the board — that's the moment to revisit the tabled
@@ -39,6 +43,12 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
     the port with DTR/RTS de-asserted or the chip latches into bootloader.
 
 ## Done
+
+- 2026-07-18 — Display design round 2: **new hand-drawn 8×14 small font**
+  (finer strokes, true descenders — metas/labels/legends readable now);
+  **View A redesigned**: full-width task titles (~60 chars, up to 5 rows),
+  Top 3 box removed, Active/Waiting/Later/Done-today stat band along the
+  bottom. View B metas upgraded to the small font too.
 
 - 2026-07-18 — **Green button retargeted**: completes the FIRST task of
   Today's Priorities in board order (was global priority #1); no-op when that
