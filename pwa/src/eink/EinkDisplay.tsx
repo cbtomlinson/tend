@@ -150,7 +150,7 @@ export function EinkDisplay({ tasks, buckets }: { tasks: Task[]; buckets: Bucket
               <div className={s.viewA}>
                 <div className={s.aMain} style={{ width: '100%' }}>
                   <div className={s.aHead}>WAITING ON — {waiting.length}</div>
-                  {waiting.slice(0, 5).map((r) => (
+                  {waiting.slice(0, 7).map((r) => (
                     <div key={r.id} className={s.aRow}>
                       <PrioSquare prio={r.prio} size={15} />
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -158,15 +158,14 @@ export function EinkDisplay({ tasks, buckets }: { tasks: Task[]; buckets: Bucket
                         <div className={s.aRowMeta}>
                           <span className={r.stale ? s.waitChipStale : undefined}>
                             {r.chip}
-                          </span>{' '}
-                          {r.rest}
+                          </span>
+                          {r.note && <> {r.note}</>}
                         </div>
-                        {r.note && <div className={s.aRowMeta}>{r.note}</div>}
                       </div>
                     </div>
                   ))}
-                  {waiting.length > 5 && (
-                    <div className={s.aRowMeta}>+{waiting.length - 5} more in Tend</div>
+                  {waiting.length > 7 && (
+                    <div className={s.aRowMeta}>+{waiting.length - 7} more in Tend</div>
                   )}
                 </div>
               </div>

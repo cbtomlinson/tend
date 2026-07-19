@@ -204,40 +204,31 @@ export function drawViewB(snapshot: Snapshot): Bitmap {
 
   let y = 90;
   let shown = 0;
+  const ROW_H = 50; // compact: title + one chip/note line (Chelsea, 2026-07-18)
   for (const t of items) {
-    const hasNote = !!t.note?.trim();
-    const rowH = hasNote ? 76 : 58;
-    if (y + rowH > 440) break;
+    if (y + ROW_H > 442) break;
 
     prioMark(bm, mainX, y + 3, 18, t.prio);
     bm.drawText(F_MED, mainX + 30, y, Bitmap.fit(F_MED, t.title, mainW - 30));
 
-    // Info line: [waiting Nd] on Person · SLG · OP Rehab
-    const d = days(t);
-    const chipText = `waiting ${d}d`;
+    // One info line: [waiting Nd] the note
+    const chipText = `waiting ${days(t)}d`;
     let cx = mainX + 30;
     if (stale(t)) {
       const chipW = Bitmap.textW(F_SMALL, chipText) + 12;
       bm.fillRect(cx, y + 25, chipW, 18);
       bm.drawText(F_SMALL, cx + 6, y + 26, chipText, true);
-      cx += chipW + 8;
+      cx += chipW + 10;
     } else {
-      cx = bm.drawText(F_SMALL, cx, y + 26, chipText) + 8;
+      cx = bm.drawText(F_SMALL, cx, y + 26, chipText) + 10;
     }
-    const rest = `${t.waiting ? `on ${t.waiting} · ` : ''}${shortSource(t.source)} · ${t.area ?? ''}`;
-    bm.drawText(F_SMALL, cx, y + 26, Bitmap.fit(F_SMALL, rest, mainX + mainW - cx));
-
-    if (hasNote) {
-      bm.drawText(
-        F_SMALL,
-        mainX + 30,
-        y + 44,
-        Bitmap.fit(F_SMALL, t.note!.trim(), mainW - 30),
-      );
+    const note = t.note?.trim();
+    if (note) {
+      bm.drawText(F_SMALL, cx, y + 26, Bitmap.fit(F_SMALL, note, mainX + mainW - cx));
     }
-    y += rowH;
+    y += ROW_H;
     shown++;
-    bm.hline(mainX, y - 8, mainW, 1);
+    bm.hline(mainX, y - 6, mainW, 1);
   }
   if (items.length > shown) {
     const more = `+${items.length - shown} more in Tend`;
