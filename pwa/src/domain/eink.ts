@@ -1,4 +1,6 @@
 import type { Bucket, Prio, Task } from '@/data/types';
+import { daysSince } from './dates';
+import { staleDays } from './waiting';
 import { shortSource } from './sources';
 
 /*
@@ -66,6 +68,37 @@ export function buildEinkA(active: Task[], doneToday: number): EinkViewA {
     later: byBucket(active, 'later').length,
     done: doneToday,
   };
+}
+
+export interface EinkWaitRow {
+  id: Task['id'];
+  title: string;
+  prio: Prio;
+  /** e.g. "waiting 9d" */
+  chip: string;
+  /** Past its reminder threshold (rendered inverted/flagged). */
+  stale: boolean;
+  /** e.g. "on Katie · SLG · OP Rehab" */
+  rest: string;
+  note: string;
+}
+
+/** View B: the Waiting On bucket with durations + notes, longest-stale first. */
+export function buildEinkWaiting(active: Task[]): EinkWaitRow[] {
+  const items = byBucket(active, 'waiting')
+    .slice()
+    .sort(
+      (a, b) => staleDays(b) - staleDays(a) || a.order - b.order,
+    );
+  return items.map((t) => ({
+    id: t.id,
+    title: t.title,
+    prio: t.prio,
+    chip: `waiting ${daysSince(t.waitingSince)}d`,
+    stale: staleDays(t) > 0,
+    rest: `${t.waiting ? `on ${t.waiting} · ` : ''}${shortSource(t.source)} · ${t.area}`,
+    note: t.note.trim(),
+  }));
 }
 
 /** View C: the Quick Wins bucket (matched by name), as one full-width list. */

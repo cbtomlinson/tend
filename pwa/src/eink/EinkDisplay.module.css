@@ -252,3 +252,10 @@
   background: #fff;
   border: 2px solid #111;
 }
+
+/* Inverted "waiting Nd" chip for stale waiting rows (mirrors the panel). */
+.waitChipStale {
+  background: #111;
+  color: #fff;
+  padding: 0 4px;
+}

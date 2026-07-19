@@ -44,6 +44,9 @@ export interface SnapTask {
   bucket?: string;
   due?: string;
   waiting?: string;
+  waitingSince?: string;
+  waitRemindDays?: number;
+  note?: string;
   status?: string;
   archivedAt?: string;
   archivedIso?: string;

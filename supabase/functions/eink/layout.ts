@@ -1,6 +1,6 @@
 import { Bitmap } from './raster.ts';
 import { F_BIG, F_MED, F_SMALL } from './fonts.ts';
-import type { SnapBucket, SnapTask, Snapshot } from '../_shared/boardStore.ts';
+import type { SnapTask, Snapshot } from '../_shared/boardStore.ts';
 
 /*
  * Draws the e-ink views (mirrors pwa/src/domain/eink.ts + EinkDisplay).
@@ -169,38 +169,83 @@ export function drawViewA(snapshot: Snapshot): Bitmap {
   return bm;
 }
 
+/** Whole days between two ISO dates ('' -> 0). */
+function daysBetween(fromIso: string | undefined, toIso: string): number {
+  if (!fromIso) return 0;
+  const a = new Date(`${fromIso}T00:00:00Z`).getTime();
+  const b = new Date(`${toIso}T00:00:00Z`).getTime();
+  if (Number.isNaN(a) || Number.isNaN(b)) return 0;
+  return Math.max(0, Math.round((b - a) / 86400000));
+}
+
+/**
+ * View B: the Waiting On bucket, full width (Chelsea, 2026-07-18) — each row
+ * shows how long it's been waiting (inverted chip once past its reminder
+ * threshold, like the phone's amber flag), who it's waiting on, and the note.
+ * Longest-stale float to the top, mirroring the phone board.
+ */
 export function drawViewB(snapshot: Snapshot): Bitmap {
   const bm = new Bitmap(W, H);
+  const { iso } = nyParts();
   const act = active(snapshot);
-  const buckets = (snapshot.buckets ?? [])
-    .slice()
-    .sort((a: SnapBucket, b: SnapBucket) => (a.order ?? 0) - (b.order ?? 0))
-    .slice(0, 3);
+  const days = (t: SnapTask) => daysBetween(t.waitingSince, iso);
+  const stale = (t: SnapTask) => days(t) >= (t.waitRemindDays ?? 7);
+  const items = byBucket(act, 'waiting').sort(
+    (a, b) =>
+      (stale(b) ? days(b) : 0) - (stale(a) ? days(a) : 0) ||
+      (a.order ?? 0) - (b.order ?? 0),
+  );
 
-  header(bm, 'buckets');
+  header(bm, 'waiting on');
 
-  const colW = Math.floor((W - 2 * MARGIN) / 3);
-  buckets.forEach((b, i) => {
-    const x = MARGIN + i * colW;
-    if (i > 0) bm.vline(x - 6, HEADER_RULE_Y + 8, FOOTER_RULE_Y - HEADER_RULE_Y - 16, 1);
-    const items = byBucket(act, b.id);
+  const mainX = MARGIN;
+  const mainW = W - 2 * MARGIN;
+  bm.drawText(F_MED, mainX, 58, `WAITING ON - ${items.length}`);
 
-    const count = String(items.length);
-    bm.drawText(F_MED, x, 58, Bitmap.fit(F_MED, b.name.toUpperCase(), colW - 60));
-    bm.drawText(F_MED, x + colW - 16 - Bitmap.textW(F_MED, count), 58, count);
-    bm.hline(x, 86, colW - 16, 2);
+  let y = 90;
+  let shown = 0;
+  for (const t of items) {
+    const hasNote = !!t.note?.trim();
+    const rowH = hasNote ? 76 : 58;
+    if (y + rowH > 440) break;
 
-    let y = 96;
-    for (const t of items.slice(0, 4)) {
-      prioMark(bm, x, y + 3, 14, t.prio);
-      bm.drawText(F_MED, x + 22, y, Bitmap.fit(F_MED, t.title, colW - 40));
-      bm.drawText(F_SMALL, x + 22, y + 28, Bitmap.fit(F_SMALL, meta(t), colW - 40));
-      y += 84;
+    prioMark(bm, mainX, y + 3, 18, t.prio);
+    bm.drawText(F_MED, mainX + 30, y, Bitmap.fit(F_MED, t.title, mainW - 30));
+
+    // Info line: [waiting Nd] on Person · SLG · OP Rehab
+    const d = days(t);
+    const chipText = `waiting ${d}d`;
+    let cx = mainX + 30;
+    if (stale(t)) {
+      const chipW = Bitmap.textW(F_SMALL, chipText) + 12;
+      bm.fillRect(cx, y + 25, chipW, 18);
+      bm.drawText(F_SMALL, cx + 6, y + 26, chipText, true);
+      cx += chipW + 8;
+    } else {
+      cx = bm.drawText(F_SMALL, cx, y + 26, chipText) + 8;
     }
-    const more = items.length - 4;
-    if (more > 0) bm.drawText(F_SMALL, x, 428, `+${more} more`);
-    if (items.length === 0) bm.drawText(F_SMALL, x, 100, 'Empty');
-  });
+    const rest = `${t.waiting ? `on ${t.waiting} · ` : ''}${shortSource(t.source)} · ${t.area ?? ''}`;
+    bm.drawText(F_SMALL, cx, y + 26, Bitmap.fit(F_SMALL, rest, mainX + mainW - cx));
+
+    if (hasNote) {
+      bm.drawText(
+        F_SMALL,
+        mainX + 30,
+        y + 44,
+        Bitmap.fit(F_SMALL, t.note!.trim(), mainW - 30),
+      );
+    }
+    y += rowH;
+    shown++;
+    bm.hline(mainX, y - 8, mainW, 1);
+  }
+  if (items.length > shown) {
+    const more = `+${items.length - shown} more in Tend`;
+    bm.drawText(F_SMALL, W - MARGIN - Bitmap.textW(F_SMALL, more), 64, more);
+  }
+  if (items.length === 0) {
+    bm.drawText(F_MED, mainX, 100, 'Waiting on nothing. Nice.');
+  }
 
   footer(bm);
   return bm;
