@@ -44,6 +44,13 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## Done
 
+- 2026-07-18 — **View 2 rebuilt as Waiting On** (Chelsea: 3-column view showed
+  too little of long task names): full-width titles, "waiting Nd" duration
+  chip (inverted black once past the reminder threshold), who it's waiting
+  on, and the task note; longest-stale sorts first (mirrors the phone).
+  The 3-view cycle is now one bucket per view: Today → Waiting → Quick Wins.
+  Idea noted: a view per bucket was considered and deferred (cycling fatigue).
+
 - 2026-07-18 — Display design round 3: **Spleen bitmap fonts** (professionally
   designed, BSD-2, converted from BDF at native 8×16/12×24/16×32 — no more
   scaled-pixel staircase anywhere); **View C: Quick Wins bucket** (firmware
