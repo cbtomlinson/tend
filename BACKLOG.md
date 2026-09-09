@@ -22,6 +22,14 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## Done
 
+- 2026-09-08 — **Project timelines on the display** (replaces the sticky note
+  on Chelsea's monitor): Display tab gets a "Project timelines" editor (title
+  + one milestone line each, free-form dates/percents); notes sync with the
+  board and render as a bordered sticky-note box on View 1's right side.
+  Tasks share width with the box only while timelines exist — delete them all
+  and full-width titles return. Data: `timelines` table (Dexie v3), in
+  backups + board snapshot. 70 tests.
+
 - 2026-09-08 — **Manual entries auto-tag their area** (Chelsea: "IRF regulatory
   checklist" landed in ClinDoc): typed tasks now guess via explicit area names
   > known people > domain keywords, falling back to the first area. Local +
