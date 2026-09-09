@@ -44,6 +44,11 @@ export function serverArchivedIds(
 export async function pushBoard(): Promise<boolean> {
   try {
     const snapshot = await buildBackup();
+    // NEVER push a task-less board: a brand-new browser/device that logs in
+    // has an empty local DB, and pushing it would clobber the server copy
+    // (which is also the wiped-phone recovery copy). Happened for real on
+    // 2026-09-09 — a verification login blanked the display's board.
+    if ((snapshot.tasks?.length ?? 0) === 0) return false;
     const res = await apiPost('board', { snapshot });
     if (res.ok) {
       await db.meta.put({ key: 'lastBoardPushAt', value: Date.now() });
