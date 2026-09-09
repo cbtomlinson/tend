@@ -8,6 +8,7 @@ import {
   useLastCaptures,
   usePeople,
 } from '@/data/store';
+import { guessArea } from '@/domain/autoArea';
 import { buildReconcile } from '@/domain/reconcile';
 import { extractTasks } from '@/services/vision';
 import { areaBgVar, areaTextVar, nextArea, useAreas } from '@/domain/areas';
@@ -143,7 +144,8 @@ export function CaptureOverlay() {
     if (!title) return;
     addCapture({
       source: 'Hand',
-      items: [{ title, area: areaNames[0] ?? 'ClinDoc' }],
+      // Typed entries get area auto-tagging too (area names, people, keywords).
+      items: [{ title, area: guessArea(title, areaNames, people) }],
       phiSuspected: false,
       unknownPeople: [],
     });
