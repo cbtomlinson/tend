@@ -142,9 +142,12 @@ function taskList(
  * The project-timelines "sticky note" box (Chelsea, 2026-09-08 — replaces the
  * physical sticky on her monitor). Only drawn when timelines exist.
  */
+/** Sticky-box width — slim (Chelsea 2026-09-09) so tasks keep more room. */
+export const TIMELINE_BOX_W = 228;
+
 function drawTimelines(bm: Bitmap, timelines: Snapshot['timelines']): void {
-  const boxX = 516;
-  const boxW = W - MARGIN - boxX;
+  const boxW = TIMELINE_BOX_W;
+  const boxX = W - MARGIN - boxW;
   const boxY = 58;
   const boxMaxBottom = 374;
   const padX = 12;
@@ -200,7 +203,7 @@ export function drawViewA(snapshot: Snapshot): Bitmap {
     byBucket(act, 'today'),
     "TODAY'S PRIORITIES",
     5,
-    hasTimelines ? 470 : W - 2 * MARGIN,
+    hasTimelines ? W - 2 * MARGIN - TIMELINE_BOX_W - 16 : W - 2 * MARGIN,
   );
   if (hasTimelines) drawTimelines(bm, snapshot.timelines);
 
