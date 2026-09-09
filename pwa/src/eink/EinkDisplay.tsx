@@ -40,8 +40,8 @@ export function EinkDisplay({ tasks, buckets }: { tasks: Task[]; buckets: Bucket
     <div className={s.wrap}>
       <div className={s.title}>On your e-ink display</div>
       <div className={s.sub}>
-        Read-only mirror on the reTerminal (800×480, B/W). BTN&nbsp;A rotates the two
-        views.
+        Read-only mirror on the reTerminal (800×480, B/W). The left button
+        rotates the views. · app built {__TEND_BUILT__}
       </div>
 
       <div className={s.tabs}>

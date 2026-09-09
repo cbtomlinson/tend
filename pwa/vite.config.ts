@@ -148,6 +148,10 @@ export default defineConfig(({ mode }) => {
   };
 
   return {
+    define: {
+      // Visible build stamp (Display tab) — tells us what the phone is running.
+      __TEND_BUILT__: JSON.stringify(new Date().toISOString().slice(0, 10)),
+    },
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
