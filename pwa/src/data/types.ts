@@ -28,6 +28,19 @@ export interface Person {
   area: Area | null;
 }
 
+/**
+ * A project timeline "sticky note" shown on the e-ink display's View 1 —
+ * a title plus free-form milestone lines (one per line), e.g.
+ * "Upgrade: Aug 2026" / "Reviews 9/16 50%, 9/30 100%".
+ */
+export interface TimelineNote {
+  id: string;
+  title: string;
+  /** Milestone lines, newline-separated (rendered one per line). */
+  body: string;
+  order: number;
+}
+
 export type Prio = 'High' | 'Med' | 'Low';
 
 export type DueUrgency = '' | 'normal' | 'soon' | 'overdue';

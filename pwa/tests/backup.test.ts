@@ -40,6 +40,17 @@ describe('parseBackup', () => {
   });
 });
 
+describe('timelines in backups', () => {
+  it('accepts backups with and without the timelines field', () => {
+    const withTl = JSON.parse(valid());
+    withTl.timelines = [
+      { id: 'tl1', title: 'Upgrade: Aug 2026', body: 'Reviews 9/16 50%', order: 0 },
+    ];
+    expect(parseBackup(JSON.stringify(withTl)).timelines).toHaveLength(1);
+    expect(parseBackup(valid()).timelines).toBeUndefined(); // pre-timeline backups
+  });
+});
+
 describe('backupFilename', () => {
   it('is date-stamped json', () => {
     expect(backupFilename()).toMatch(/^tend-backup-\d{4}-\d{2}-\d{2}\.json$/);

@@ -114,6 +114,7 @@ export function startBoardSync(
       db.buckets.toArray(),
       db.areas.toArray(),
       db.people.toArray(),
+      db.timelines.toArray(),
     ]),
   ).subscribe({
     next: () => {

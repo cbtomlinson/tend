@@ -273,3 +273,81 @@
   font: 600 10px var(--font-mono);
   color: #111;
 }
+
+/* Timeline lines inside the preview sticky box. */
+.tlLine {
+  font: 500 12px var(--font-mono);
+  color: #111;
+  line-height: 1.45;
+}
+
+/* ---- Project timelines editor (below the panel preview) ---- */
+.tlSection {
+  margin-top: 20px;
+}
+.tlSectionHead {
+  font: 600 14px var(--font-sans);
+  color: var(--ink);
+}
+.tlSectionSub {
+  font: 400 11.5px var(--font-sans);
+  color: var(--muted);
+  margin: 3px 0 12px;
+  line-height: 1.45;
+}
+.tlCard {
+  background: #fff;
+  border: 1px solid var(--line-2);
+  border-radius: 11px;
+  padding: 11px;
+  margin-bottom: 10px;
+}
+.tlCardHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.tlTitle {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  border-bottom: 1px dashed var(--line-3);
+  background: transparent;
+  /* 16px keeps iOS Safari from auto-zooming on focus. */
+  font: 600 16px var(--font-sans);
+  color: var(--ink);
+  outline: none;
+  padding: 2px 0;
+}
+.tlDelete {
+  flex: none;
+  border: none;
+  background: transparent;
+  color: var(--danger);
+  cursor: pointer;
+  padding: 4px;
+}
+.tlBody {
+  width: 100%;
+  border: 1px solid var(--line-3);
+  border-radius: 9px;
+  background: #fbfcfd;
+  font: 400 16px var(--font-mono);
+  color: var(--ink);
+  outline: none;
+  padding: 9px;
+  resize: vertical;
+}
+.tlAdd {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px dashed var(--line-3);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--accent);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+  padding: 9px 14px;
+}

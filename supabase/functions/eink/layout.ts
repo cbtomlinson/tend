@@ -110,19 +110,19 @@ function footer(bm: Bitmap): void {
   });
 }
 
-/** Full-width task list used by views A and C. Returns nothing drawn below yMax. */
+/** Task list used by views A and C (width-parameterized for side panels). */
 function taskList(
   bm: Bitmap,
   tasks: SnapTask[],
   headLabel: string,
   rowsMax: number,
+  mainW: number = W - 2 * MARGIN,
 ): void {
   const mainX = MARGIN;
-  const mainW = W - 2 * MARGIN;
   bm.drawText(F_MED, mainX, 58, `${headLabel} - ${tasks.length}`);
   if (tasks.length > rowsMax) {
     const more = `+${tasks.length - rowsMax} more in Tend`;
-    bm.drawText(F_SMALL, W - MARGIN - Bitmap.textW(F_SMALL, more), 64, more);
+    bm.drawText(F_SMALL, mainX + mainW - Bitmap.textW(F_SMALL, more), 64, more);
   }
   let y = 90;
   const shown = tasks.slice(0, rowsMax);
@@ -138,13 +138,71 @@ function taskList(
   }
 }
 
+/**
+ * The project-timelines "sticky note" box (Chelsea, 2026-09-08 — replaces the
+ * physical sticky on her monitor). Only drawn when timelines exist.
+ */
+function drawTimelines(bm: Bitmap, timelines: Snapshot['timelines']): void {
+  const boxX = 516;
+  const boxW = W - MARGIN - boxX;
+  const boxY = 58;
+  const boxMaxBottom = 374;
+  const padX = 12;
+
+  // Measure content height first so the box hugs its content.
+  const notes = (timelines ?? [])
+    .filter((t) => (t.title ?? '').trim() || (t.body ?? '').trim())
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  let need = 12;
+  for (const n of notes) {
+    need += 26; // title line
+    need += (n.body ?? '').split('\n').filter((l) => l.trim()).length * 18;
+    need += 8; // gap
+  }
+  const boxH = Math.min(need + 4, boxMaxBottom - boxY);
+  bm.rect(boxX, boxY, boxW, boxH, 2);
+
+  let y = boxY + 10;
+  const bottom = boxY + boxH - 12;
+  for (const n of notes) {
+    if (y + 24 > bottom) break;
+    bm.drawText(
+      F_MED,
+      boxX + padX,
+      y,
+      Bitmap.fit(F_MED, (n.title ?? '').trim() || 'Untitled', boxW - 2 * padX),
+    );
+    y += 26;
+    for (const line of (n.body ?? '').split('\n')) {
+      const l = line.trim();
+      if (!l) continue;
+      if (y + 16 > bottom) break;
+      bm.drawText(F_SMALL, boxX + padX, y, Bitmap.fit(F_SMALL, l, boxW - 2 * padX));
+      y += 18;
+    }
+    y += 8;
+  }
+}
+
 export function drawViewA(snapshot: Snapshot): Bitmap {
   const bm = new Bitmap(W, H);
   const { iso } = nyParts();
   const act = active(snapshot);
+  const hasTimelines = (snapshot.timelines ?? []).some(
+    (t) => (t.title ?? '').trim() || (t.body ?? '').trim(),
+  );
 
   header(bm, "today's priorities");
-  taskList(bm, byBucket(act, 'today'), "TODAY'S PRIORITIES", 5);
+  // With timelines, tasks share the row with the sticky box; without, they
+  // keep the full width.
+  taskList(
+    bm,
+    byBucket(act, 'today'),
+    "TODAY'S PRIORITIES",
+    5,
+    hasTimelines ? 470 : W - 2 * MARGIN,
+  );
+  if (hasTimelines) drawTimelines(bm, snapshot.timelines);
 
   // Bottom stat band: Active · Waiting On · Later · Total Tasks · Done today
   const bandTop = 384;

@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { AreaDef, Bucket, Person, Task } from './types';
+import type { AreaDef, Bucket, Person, Task, TimelineNote } from './types';
 
 /*
  * Local-first store. Tasks + buckets live ONLY on-device (IndexedDB).
@@ -13,6 +13,8 @@ export class TendDB extends Dexie {
   areas!: Table<AreaDef, string>;
   /** Learned people → area hints for scan auto-assignment (v2). */
   people!: Table<Person, string>;
+  /** Project timeline "sticky notes" shown on the e-ink display (v3). */
+  timelines!: Table<TimelineNote, string>;
   /** key/value for small app metadata (e.g. nextId). */
   meta!: Table<{ key: string; value: number }, string>;
 
@@ -28,6 +30,14 @@ export class TendDB extends Dexie {
       buckets: 'id, order',
       areas: 'name, order',
       people: 'name',
+      meta: 'key',
+    });
+    this.version(3).stores({
+      tasks: 'id, bucket, area, status, order',
+      buckets: 'id, order',
+      areas: 'name, order',
+      people: 'name',
+      timelines: 'id, order',
       meta: 'key',
     });
   }

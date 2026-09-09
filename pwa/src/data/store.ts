@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from './db';
 import { SEED_BUCKETS, SEED_NEXT_ID, SEED_TASKS } from './seed';
-import type { Area, Bucket, Person, Source, Task } from './types';
+import type { Area, Bucket, Person, Source, Task, TimelineNote } from './types';
 import { daysSince, isoToday, shortToIso, today } from '@/domain/dates';
 import { AREA_PALETTE_SIZE, DEFAULT_AREAS } from '@/domain/areas';
 import { winningSource } from '@/domain/sources';
@@ -324,6 +324,39 @@ export function usePeople(): Person[] {
 /** Learn a person -> area hint for future scans. */
 export async function definePerson(name: string, area: Area): Promise<void> {
   await db.people.put({ name: name.trim(), area });
+}
+
+/* ------------------------------------------------------------------ */
+/* Project timelines (e-ink View 1 "sticky notes")                     */
+/* ------------------------------------------------------------------ */
+
+export function useTimelines(): TimelineNote[] {
+  return (
+    useLiveQuery(
+      () => db.timelines.orderBy('order').toArray(),
+      [],
+      [] as TimelineNote[],
+    ) ?? []
+  );
+}
+
+export async function addTimeline(): Promise<string> {
+  const id = `tl${await takeId()}`;
+  const all = await db.timelines.toArray();
+  const maxOrder = Math.max(-1, ...all.map((t) => t.order));
+  await db.timelines.put({ id, title: '', body: '', order: maxOrder + 1 });
+  return id;
+}
+
+export async function updateTimeline(
+  id: string,
+  patch: Partial<TimelineNote>,
+): Promise<void> {
+  await db.timelines.update(id, patch);
+}
+
+export async function deleteTimeline(id: string): Promise<void> {
+  await db.timelines.delete(id);
 }
 
 /* ------------------------------------------------------------------ */

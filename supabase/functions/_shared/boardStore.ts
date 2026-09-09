@@ -60,10 +60,19 @@ export interface SnapBucket {
   order?: number;
   [k: string]: unknown;
 }
+export interface SnapTimeline {
+  id: string;
+  title?: string;
+  /** Milestone lines, newline-separated. */
+  body?: string;
+  order?: number;
+  [k: string]: unknown;
+}
 export interface Snapshot {
   app?: string;
   tasks?: SnapTask[];
   buckets?: SnapBucket[];
+  timelines?: SnapTimeline[];
   [k: string]: unknown;
 }
 export interface BoardRow {

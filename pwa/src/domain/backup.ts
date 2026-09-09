@@ -1,5 +1,5 @@
 import { db } from '@/data/db';
-import type { AreaDef, Bucket, Person, Task } from '@/data/types';
+import type { AreaDef, Bucket, Person, Task, TimelineNote } from '@/data/types';
 
 /*
  * Backup & restore. The board lives only in IndexedDB, and a browser/OS can
@@ -16,15 +16,18 @@ export interface Backup {
   buckets: Bucket[];
   areas: AreaDef[];
   people: Person[];
+  /** Optional (added 2026-09-08) — older backups won't have it. */
+  timelines?: TimelineNote[];
   nextId: number;
 }
 
 export async function buildBackup(): Promise<Backup> {
-  const [tasks, buckets, areas, people, nextIdRow] = await Promise.all([
+  const [tasks, buckets, areas, people, timelines, nextIdRow] = await Promise.all([
     db.tasks.toArray(),
     db.buckets.toArray(),
     db.areas.toArray(),
     db.people.toArray(),
+    db.timelines.toArray(),
     db.meta.get('nextId'),
   ]);
   return {
@@ -35,6 +38,7 @@ export async function buildBackup(): Promise<Backup> {
     buckets,
     areas,
     people,
+    timelines,
     nextId: nextIdRow?.value ?? 50,
   };
 }
@@ -85,15 +89,12 @@ export function parseBackup(text: string): Backup {
 export async function restoreBackup(data: Backup): Promise<RestoreCounts> {
   await db.transaction(
     'rw',
-    db.tasks,
-    db.buckets,
-    db.areas,
-    db.people,
-    db.meta,
+    [db.tasks, db.buckets, db.areas, db.people, db.timelines, db.meta],
     async () => {
       if (data.buckets?.length) await db.buckets.bulkPut(data.buckets);
       if (data.areas?.length) await db.areas.bulkPut(data.areas);
       if (data.people?.length) await db.people.bulkPut(data.people);
+      if (data.timelines?.length) await db.timelines.bulkPut(data.timelines);
       if (data.tasks?.length) await db.tasks.bulkPut(data.tasks);
       const cur = (await db.meta.get('nextId'))?.value ?? 0;
       await db.meta.put({ key: 'nextId', value: Math.max(cur, data.nextId ?? 0) });

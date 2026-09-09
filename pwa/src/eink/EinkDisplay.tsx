@@ -1,8 +1,14 @@
-import { Check, RotateCcw, RotateCw } from 'lucide-react';
+import { Check, Plus, RotateCcw, RotateCw, Trash2 } from 'lucide-react';
 import type { Bucket, Prio, Task } from '@/data/types';
 import { buildEinkA, buildEinkC, buildEinkWaiting } from '@/domain/eink';
 import { today, weekday } from '@/domain/dates';
-import { useArchivedTasks } from '@/data/store';
+import {
+  addTimeline,
+  deleteTimeline,
+  updateTimeline,
+  useArchivedTasks,
+  useTimelines,
+} from '@/data/store';
 import { useUI } from '@/app/uiState';
 import s from './EinkDisplay.module.css';
 
@@ -19,6 +25,7 @@ function PrioSquare({ prio, size }: { prio: Prio; size: number }) {
 export function EinkDisplay({ tasks, buckets }: { tasks: Task[]; buckets: Bucket[] }) {
   const { einkView, setEinkView } = useUI();
   const archived = useArchivedTasks();
+  const timelines = useTimelines();
   const doneToday = archived.filter((t) => t.archivedAt === today()).length;
 
   const a = buildEinkA(tasks, doneToday);
@@ -117,15 +124,23 @@ export function EinkDisplay({ tasks, buckets }: { tasks: Task[]; buckets: Bucket
                   ))}
                 </div>
                 <div className={s.aSide}>
-                  <div className={s.topBox}>
-                    <div className={s.topHead}>TOP 3 PRIORITIES</div>
-                    {a.top3.map((p) => (
-                      <div key={p.n} className={s.topRow}>
-                        <span className={s.topNum}>{p.n}</span>
-                        {p.t}
-                      </div>
-                    ))}
-                  </div>
+                  {timelines.length > 0 && (
+                    <div className={s.topBox}>
+                      {timelines.map((tl) => (
+                        <div key={tl.id} style={{ marginBottom: 8 }}>
+                          <div className={s.topHead}>{tl.title || 'Untitled'}</div>
+                          {tl.body
+                            .split('\n')
+                            .filter((l) => l.trim())
+                            .map((line, i) => (
+                              <div key={i} className={s.tlLine}>
+                                {line}
+                              </div>
+                            ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div>
                     <div className={s.summaryRow}>
                       <span>Active</span>
@@ -186,6 +201,46 @@ export function EinkDisplay({ tasks, buckets }: { tasks: Task[]; buckets: Bucket
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ---- Project timelines editor (rendered on View 1) ---- */}
+      <div className={s.tlSection}>
+        <div className={s.tlSectionHead}>Project timelines</div>
+        <div className={s.tlSectionSub}>
+          Shown as a sticky-note box on View 1 of your display. One milestone
+          per line — dates however you like (e.g. &ldquo;Reviews 9/16 50%, 9/30
+          100%&rdquo;).
+        </div>
+        {timelines.map((tl) => (
+          <div key={tl.id} className={s.tlCard}>
+            <div className={s.tlCardHead}>
+              <input
+                className={s.tlTitle}
+                value={tl.title}
+                placeholder="Upgrade: Aug 2026"
+                onChange={(e) => updateTimeline(tl.id, { title: e.target.value })}
+              />
+              <button
+                type="button"
+                className={s.tlDelete}
+                aria-label="Delete timeline"
+                onClick={() => deleteTimeline(tl.id)}
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
+            <textarea
+              className={s.tlBody}
+              rows={4}
+              value={tl.body}
+              placeholder={'Reviews 9/16 50%, 9/30 100%\nBuild 10/9 50%, 10/14 100%\nTesting 10/30\nTraining 11/6'}
+              onChange={(e) => updateTimeline(tl.id, { body: e.target.value })}
+            />
+          </div>
+        ))}
+        <button type="button" className={s.tlAdd} onClick={() => addTimeline()}>
+          <Plus size={15} strokeWidth={2.5} /> Add a timeline
+        </button>
       </div>
     </div>
   );
