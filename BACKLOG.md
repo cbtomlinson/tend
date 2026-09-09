@@ -12,18 +12,23 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
   redundant with Today's Priorities as the main list). The priority-ranking
   logic still exists if it ever earns a spot back.
 
-- **E-ink version.** Original long-term goal: phone-first now, a low-refresh
-  e-ink layout later. Future phase, not started. NOTE: will likely need a
-  server-held copy of the board — that's the moment to revisit the tabled
-  "guaranteed 5 pm backup / server snapshot" idea (Chelsea tabled it 2026-07-02:
-  it weakens "data only on my phone" and isn't worth it until sync/e-ink needs it).
 - **Rate-limit persistence** (Supabase table instead of per-isolate memory),
   **CSP header**, **multi-device sync** — from the 2026-07-01 security review,
   all low priority. (Sync likely rides along with the e-ink server copy.)
 
 ## In progress
 
-- **E-ink display (reTerminal E1001).** Decisions locked 2026-07-17: hardware
+- _(nothing right now)_
+
+## Done
+
+- 2026-09-08 — **Manual entries auto-tag their area** (Chelsea: "IRF regulatory
+  checklist" landed in ClinDoc): typed tasks now guess via explicit area names
+  > known people > domain keywords, falling back to the first area. Local +
+  instant (no AI call); review chip still editable. 69 tests.
+- 2026-07-17/18 — **E-ink display SHIPPED end-to-end** (reTerminal E1001, was
+  In Progress): (details of the three stages follow in the entry below).
+- ARCHIVED-IN-PROGRESS — **E-ink display (reTerminal E1001).** Decisions locked 2026-07-17: hardware
   in hand; FULL spec (incl. button-C write-back); 15-min refresh cadence;
   server board copy consented.
   - ✅ Stage 1 (2026-07-18): server copy live — `board` table (RLS, service-key
