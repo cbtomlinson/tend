@@ -222,7 +222,7 @@ export function App() {
           <Board tasks={tasks} buckets={buckets} drag={drag} />
         )}
         {ui.view === 'archive' && <Archive />}
-        {ui.view === 'eink' && <EinkDisplay tasks={tasks} buckets={buckets} />}
+        {ui.view === 'eink' && <EinkDisplay />}
       </div>
 
       {/* BOTTOM NAV */}

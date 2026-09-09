@@ -69,7 +69,7 @@ export async function verifyPassword(candidate: string): Promise<boolean> {
   }
 }
 
-export type ApiEndpoint = 'vision' | 'email' | 'board';
+export type ApiEndpoint = 'vision' | 'email' | 'board' | 'eink';
 
 export async function apiPost(
   endpoint: ApiEndpoint,
@@ -93,8 +93,8 @@ export async function apiPost(
   return res;
 }
 
-export async function apiGet(endpoint: ApiEndpoint): Promise<Response> {
-  const url = BASE ? `${BASE}/${endpoint}` : `/api/${endpoint}`;
+export async function apiGet(endpoint: ApiEndpoint, query = ''): Promise<Response> {
+  const url = (BASE ? `${BASE}/${endpoint}` : `/api/${endpoint}`) + query;
   const headers: Record<string, string> = {};
   if (REMOTE) headers['x-app-password'] = getPassword();
   const res = await fetch(url, { headers });

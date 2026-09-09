@@ -351,3 +351,28 @@
   cursor: pointer;
   padding: 9px 14px;
 }
+
+/* Live render frame: the actual BMP the panel fetches. */
+.liveFrame {
+  border: 2px solid #111;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.liveImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated; /* crisp 1-bit pixels when scaled */
+}
+.liveNote {
+  padding: 18px;
+  font: 400 12.5px var(--font-sans);
+  color: var(--muted);
+  text-align: center;
+}

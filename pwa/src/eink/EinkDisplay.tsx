@@ -1,207 +1,114 @@
-import { Check, Plus, RotateCcw, RotateCw, Trash2 } from 'lucide-react';
-import type { Bucket, Prio, Task } from '@/data/types';
-import { buildEinkA, buildEinkC, buildEinkWaiting } from '@/domain/eink';
-import { today, weekday } from '@/domain/dates';
+import { useCallback, useEffect, useState } from 'react';
+import { Plus, RefreshCw, Trash2 } from 'lucide-react';
 import {
   addTimeline,
   deleteTimeline,
   updateTimeline,
-  useArchivedTasks,
   useTimelines,
 } from '@/data/store';
+import { REMOTE, apiGet } from '@/services/api';
 import { useUI } from '@/app/uiState';
 import s from './EinkDisplay.module.css';
 
-function PrioSquare({ prio, size }: { prio: Prio; size: number }) {
-  const cls = prio === 'High' ? s.sqHigh : prio === 'Med' ? s.sqMed : s.sqLow;
-  return (
-    <div
-      className={`${s.sq} ${cls}`}
-      style={{ width: size, height: size, marginTop: 2 }}
-    />
-  );
-}
+/*
+ * Display tab: shows the REAL panel render — the same BMP the reTerminal
+ * fetches — not a hand-built imitation. (The old React mock drifted from the
+ * server renderer every time the design iterated; Chelsea caught it
+ * 2026-09-09. Now the server's pixels are the single source of truth.)
+ */
 
-export function EinkDisplay({ tasks, buckets }: { tasks: Task[]; buckets: Bucket[] }) {
+const TABS: ['A' | 'B' | 'C', string][] = [
+  ['A', "View 1 · today's priorities"],
+  ['B', 'View 2 · waiting on'],
+  ['C', 'View 3 · quick wins'],
+];
+
+export function EinkDisplay() {
   const { einkView, setEinkView } = useUI();
-  const archived = useArchivedTasks();
   const timelines = useTimelines();
-  const doneToday = archived.filter((t) => t.archivedAt === today()).length;
+  const [img, setImg] = useState<string | null>(null);
+  const [state, setState] = useState<'loading' | 'ok' | 'error'>('loading');
 
-  const a = buildEinkA(tasks, doneToday);
-  const waiting = buildEinkWaiting(tasks);
-  const quick = buildEinkC(tasks, buckets);
-  const isA = einkView === 'A';
-  const isC = einkView === 'C';
+  const load = useCallback(async () => {
+    if (!REMOTE) return;
+    setState('loading');
+    try {
+      const res = await apiGet('eink', `?view=${einkView}&format=bmp&cb=${Date.now()}`);
+      if (!res.ok) throw new Error(String(res.status));
+      const blob = await res.blob();
+      setImg((old) => {
+        if (old) URL.revokeObjectURL(old);
+        return URL.createObjectURL(blob);
+      });
+      setState('ok');
+    } catch {
+      setState('error');
+    }
+  }, [einkView]);
 
-  const headDate = `${weekday().toUpperCase()} ${today().toUpperCase()}`;
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   return (
     <div className={s.wrap}>
       <div className={s.title}>On your e-ink display</div>
       <div className={s.sub}>
-        Read-only mirror on the reTerminal (800×480, B/W). The left button
-        rotates the views. · app built {__TEND_BUILT__}
+        The actual render the reTerminal shows (the left button rotates views).
+        · app built {__TEND_BUILT__}
       </div>
 
       <div className={s.tabs}>
+        {TABS.map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            className={`${s.tab} ${einkView === key ? s.tabOn : ''}`}
+            onClick={() => setEinkView(key)}
+          >
+            {label}
+          </button>
+        ))}
         <button
           type="button"
-          className={`${s.tab} ${isA ? s.tabOn : ''}`}
-          onClick={() => setEinkView('A')}
+          className={s.tab}
+          aria-label="Refresh preview"
+          onClick={() => void load()}
         >
-          View 1 · priority
-        </button>
-        <button
-          type="button"
-          className={`${s.tab} ${einkView === 'B' ? s.tabOn : ''}`}
-          onClick={() => setEinkView('B')}
-        >
-          View 2 · waiting on
-        </button>
-        <button
-          type="button"
-          className={`${s.tab} ${isC ? s.tabOn : ''}`}
-          onClick={() => setEinkView('C')}
-        >
-          View 3 · quick wins
+          <RefreshCw size={13} />
         </button>
       </div>
 
-      <div className={s.scaler}>
-        <div className={s.scale}>
-          <div className={s.panel}>
-            <div className={s.panelHead}>
-              <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                <span className={s.brand}>TEND</span>
-                <span className={s.brandSub}>
-                  {isA ? "today's priorities" : isC ? 'quick wins' : 'waiting on'}
-                </span>
-              </div>
-              <div className={s.clock}>{headDate} · ↻ 7:02a</div>
+      {REMOTE ? (
+        <div className={s.liveFrame}>
+          {state === 'error' ? (
+            <div className={s.liveNote}>
+              Couldn&rsquo;t reach the display server — check your connection
+              and tap refresh.
             </div>
-
-            {isC ? (
-              <div className={s.viewA}>
-                <div className={s.aMain} style={{ width: '100%' }}>
-                  {quick ? (
-                    <>
-                      <div className={s.aHead}>
-                        {quick.name} — {quick.count}
-                      </div>
-                      {quick.rows.map((r) => (
-                        <div key={r.id} className={s.aRow}>
-                          <PrioSquare prio={r.prio} size={15} />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div className={s.aRowTitle}>{r.title}</div>
-                            <div className={s.aRowMeta}>{r.meta}</div>
-                          </div>
-                        </div>
-                      ))}
-                      {quick.more > 0 && (
-                        <div className={s.aRowMeta}>+{quick.more} more in Tend</div>
-                      )}
-                    </>
-                  ) : (
-                    <div className={s.aHead}>
-                      No &lsquo;Quick Wins&rsquo; bucket on the board yet.
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : isA ? (
-              <div className={s.viewA}>
-                <div className={s.aMain}>
-                  <div className={s.aHead}>TODAY&rsquo;S PRIORITIES — {a.count}</div>
-                  {a.rows.map((r) => (
-                    <div key={r.id} className={s.aRow}>
-                      <PrioSquare prio={r.prio} size={15} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div className={s.aRowTitle}>{r.title}</div>
-                        <div className={s.aRowMeta}>{r.meta}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className={s.aSide}>
-                  {timelines.length > 0 && (
-                    <div className={s.topBox}>
-                      {timelines.map((tl) => (
-                        <div key={tl.id} style={{ marginBottom: 8 }}>
-                          <div className={s.topHead}>{tl.title || 'Untitled'}</div>
-                          {tl.body
-                            .split('\n')
-                            .filter((l) => l.trim())
-                            .map((line, i) => (
-                              <div key={i} className={s.tlLine}>
-                                {line}
-                              </div>
-                            ))}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div>
-                    <div className={s.summaryRow}>
-                      <span>Active</span>
-                      <span className={s.summaryNum}>{a.active}</span>
-                    </div>
-                    <div className={s.summaryRow}>
-                      <span>Waiting On</span>
-                      <span className={s.summaryNum}>{a.waiting}</span>
-                    </div>
-                    <div className={s.summaryRow}>
-                      <span>Later</span>
-                      <span className={s.summaryNum}>{a.later}</span>
-                    </div>
-                    <div className={`${s.summaryRow} ${s.summaryRowLast}`}>
-                      <span>Done today</span>
-                      <span className={s.summaryNum}>{a.done}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className={s.viewA}>
-                <div className={s.aMain} style={{ width: '100%' }}>
-                  <div className={s.aHead}>WAITING ON — {waiting.length}</div>
-                  {waiting.slice(0, 7).map((r) => (
-                    <div key={r.id} className={s.aRow}>
-                      <div className={s.waitGutter}>
-                        <PrioSquare prio={r.prio} size={15} />
-                        <span
-                          className={`${s.waitDays} ${r.stale ? s.waitChipStale : ''}`}
-                        >
-                          {r.chip.replace('waiting ', '')}
-                        </span>
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div className={s.aRowTitle}>{r.title}</div>
-                        {r.note && <div className={s.aRowMeta}>Note: {r.note}</div>}
-                      </div>
-                    </div>
-                  ))}
-                  {waiting.length > 7 && (
-                    <div className={s.aRowMeta}>+{waiting.length - 7} more in Tend</div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className={s.footer}>
-              <div className={s.btn}>
-                <RotateCw size={14} /> Cycle view
-              </div>
-              <div className={s.btn}>
-                <RotateCcw size={14} /> Refresh
-              </div>
-              <div className={`${s.btn} ${s.btnLast}`}>
-                <Check size={14} /> Done #1
-              </div>
-            </div>
+          ) : (
+            <>
+              {img && (
+                <img
+                  className={s.liveImg}
+                  src={img}
+                  alt={`E-ink view ${einkView}`}
+                />
+              )}
+              {state === 'loading' && (
+                <div className={s.liveNote}>Rendering…</div>
+              )}
+            </>
+          )}
+        </div>
+      ) : (
+        <div className={s.liveFrame}>
+          <div className={s.liveNote}>
+            Live preview appears in the deployed app (local dev has no display
+            server).
           </div>
         </div>
-      </div>
+      )}
 
       {/* ---- Project timelines editor (rendered on View 1) ---- */}
       <div className={s.tlSection}>
