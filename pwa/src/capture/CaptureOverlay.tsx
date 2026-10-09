@@ -10,7 +10,7 @@ import {
 } from '@/data/store';
 import { guessArea } from '@/domain/autoArea';
 import { buildReconcile } from '@/domain/reconcile';
-import { extractTasks } from '@/services/vision';
+import { captureErrorMessage, extractTasks } from '@/services/vision';
 import { areaBgVar, areaTextVar, nextArea, useAreas } from '@/domain/areas';
 import { agoLabel, fmtShort } from '@/domain/dates';
 import { ALL_SOURCES, shortSource } from '@/domain/sources';
@@ -67,10 +67,10 @@ export function CaptureOverlay() {
         addCapture(extraction); // pool it; reconcile happens once, at the end
         setCaptureStep('captured');
         if (sampled) flash('Sample data — vision API not configured');
-      } catch {
+      } catch (err) {
         blobRef.current = null;
         if (cancelled) return;
-        flash('Could not read that photo — try again');
+        flash(captureErrorMessage(err));
         setCaptureStep('shoot');
       }
     })();

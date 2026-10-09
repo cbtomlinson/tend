@@ -1,5 +1,6 @@
 import type { Area, Source } from '@/data/types';
 import { db } from '@/data/db';
+import { normalizeImage } from '@/domain/image';
 import { apiPost } from './api';
 
 /*
@@ -47,8 +48,11 @@ function blobToBase64(blob: Blob): Promise<string> {
 }
 
 export async function extractTasks(image: Blob): Promise<ExtractResult> {
-  const mediaType = image.type || 'image/jpeg';
-  const imageBase64 = await blobToBase64(image);
+  // Downscale + re-encode as JPEG first: full-res camera files intermittently
+  // blew past the 5 MB caps, and library picks could be HEIC (rejected).
+  const normalized = await normalizeImage(image);
+  const mediaType = normalized.mediaType;
+  const imageBase64 = await blobToBase64(normalized.blob);
 
   // Send the live area list (so scans can assign custom areas) and the learned
   // people (name -> area hints; area:null = known one-off, don't re-flag).
@@ -58,17 +62,39 @@ export async function extractTasks(image: Blob): Promise<ExtractResult> {
   ]);
   const areas = areaDefs.map((a) => a.name);
 
-  const res = await apiPost('vision', { imageBase64, mediaType, areas, people });
+  let res: Response;
+  try {
+    res = await apiPost('vision', { imageBase64, mediaType, areas, people });
+  } catch {
+    throw new Error('offline'); // fetch itself failed — no connection
+  }
 
   if (res.status === 503) {
     // Proxy reachable but no API key configured — demo with sample data.
     return { extraction: sampleExtraction(), sampled: true };
   }
-  if (!res.ok) {
-    throw new Error('extraction_failed');
-  }
+  if (res.status === 429) throw new Error('rate_limited');
+  if (res.status === 400) throw new Error('bad_image');
+  if (!res.ok) throw new Error('extraction_failed');
   const extraction = (await res.json()) as Extraction;
   return { extraction, sampled: false };
+}
+
+/** Human message for a failed scan, by error code. */
+export function captureErrorMessage(err: unknown): string {
+  const code = err instanceof Error ? err.message : '';
+  switch (code) {
+    case 'offline':
+      return 'No connection — check your signal and try again';
+    case 'rate_limited':
+      return 'Too many tries too fast — wait a minute, then retry';
+    case 'bad_image':
+      return "The server couldn't accept that photo — try retaking it";
+    case 'unreadable_image':
+      return "Couldn't open that photo — try retaking it";
+    default:
+      return 'The scan failed — try again in a moment';
+  }
 }
 
 /**
