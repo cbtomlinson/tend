@@ -22,6 +22,13 @@ Newest ideas go under **Ideas / Someday**. When something's picked up, move it t
 
 ## Done
 
+- 2026-10-09 — **Flaky photo scans fixed** ("could not read that photo"):
+  captures were uploaded at full camera resolution — big JPEGs intermittently
+  blew the 5 MB upload/API caps, and HEIC library picks always failed. Photos
+  now downscale to 2000px JPEG on-device before upload (verified: 11.8 MB in
+  → 1.2 MB out); scan errors now say what went wrong (no connection /
+  rate-limited / bad photo) instead of one catch-all. 72 tests.
+
 - 2026-09-08 — **Project timelines on the display** (replaces the sticky note
   on Chelsea's monitor): Display tab gets a "Project timelines" editor (title
   + one milestone line each, free-form dates/percents); notes sync with the
